@@ -1,7 +1,7 @@
 
-DOCKER_REPO ?= ysde
-DOCKER_NAME := grafana-backup
-DOCKER_TAG ?= latest
+DOCKER_REPO ?= dealfa
+DOCKER_NAME := grafana-backup-tool
+DOCKER_TAG ?= v1.4.5
 PLATFORMS ?= linux/amd64,linux/arm/v7
 
 FULLTAG = $(DOCKER_REPO)/$(DOCKER_NAME):$(DOCKER_TAG)

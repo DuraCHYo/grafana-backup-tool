@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: grafana-backup-tool
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: grafana-backup-tool
+    {{- include "grafana-backup-tool.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  jobTemplate:
+    metadata:
+      labels:
+        app: grafana-backup-tool
+        {{- include "grafana-backup-tool.labels" . | nindent 8 }}
+    spec:
+      template:
+        spec:
+          restartPolicy: {{ .Values.cronjob.restartPolicy }}
+          containers:
+            - name: grafana-backup-tool
+              image: "{{ .Values.cronjob.image.repository }}:{{ .Values.cronjob.image.tag }}"
+              imagePullPolicy: {{ .Values.cronjob.image.pullPolicy }}
+              envFrom:
+                - configMapRef:
+                    name: grafana-backup-tool
+                - secretRef:
+                    name: {{ if .Values.secret.useExisting }}{{ .Values.secret.existingSecret }}{{ else }}grafana-backup-tool{{ end }}

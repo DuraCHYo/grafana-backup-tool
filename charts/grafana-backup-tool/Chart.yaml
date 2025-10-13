@@ -1,0 +1,18 @@
+apiVersion: v2
+name: grafana-backup-tool
+description: A Helm chart for Grafana backup tool using grafana-backup-tool
+version: 0.1.0
+appVersion: "1.4.5"
+type: application
+
+dependencies: []
+
+keywords:
+  - grafana
+  - backup
+  - s3
+  - cronjob
+
+maintainers:
+  - name: Danila Epishev
+    email: depishev@alfabank.ru

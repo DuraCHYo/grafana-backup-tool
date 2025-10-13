@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [1.5.0] - 2023-11-10
+# [1.4.5] - 2025-10-13
 
 ### Changed
-- If a contact point already exits it will be updated. Previous behaviour was to only to create which failed for existing contact points.
+- Add Helm Chart for Kubernetes v1.21+
+- Fix check with changed API endpoint from Grafana v12+
+- Add tests directory. docker-compose and grafana_backup_tui is made for future contributors
+- Actualized readme
 
 
 # [1.4.2] - 2023-11-01
