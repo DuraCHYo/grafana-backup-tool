@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-backup-tool
+  namespace: {{ .Values.namespace.name }}
+data:
+  GRAFANA_URL: {{ .Values.grafana.url | quote }}
+  GRAFANA_ADMIN_ACCOUNT: {{ .Values.grafana.admin.account | quote }}
+  AWS_ENDPOINT_URL: {{ .Values.backup.s3.endpoint | quote }}
+  AWS_S3_BUCKET_NAME: {{ .Values.backup.s3.bucket | quote }}
+  AWS_S3_BUCKET_KEY: {{ .Values.backup.s3.key | quote }}
+  AWS_DEFAULT_REGION: {{ .Values.backup.s3.region | quote }}

@@ -1,0 +1,58 @@
+# Default values for grafana-backup-tool
+
+namespace:
+  name: grafana-backup-tool
+  create: true
+
+# Grafana configuration
+grafana:
+  url: "http://grafana.grafana.svc.cluster.local:80"
+  # Token for Grafana API authentication
+  token: ""
+  # Admin account for backup (optional)
+  admin:
+    account: "backup"
+    password: ""
+
+# Backup storage configuration
+backup:
+  # S3 compatible storage configuration
+  s3:
+    endpoint: "http://gitlab-minio-svc.gitlab.svc.cluster.local:9000"
+    bucket: "grafana-backup"
+    key: "daily"
+    region: "us-east-1"
+    accessKey: ""
+    secretKey: ""
+
+# CronJob configuration
+cronjob:
+  schedule: "0 4 * * *"
+  image:
+    repository: "dealfa/grafana-backup-tool"
+    tag: "v1.4.5"
+    pullPolicy: "IfNotPresent"
+  restartPolicy: "Never"
+
+# Secret management
+secret:
+  # Set to true to use existing secret
+  useExisting: false
+  # Name of existing secret (if useExisting is true)
+  existingSecret: ""
+
+  # Set to true when using ArgoCD Vault Plugin
+  isVault: false
+
+  # Annotations for AVP
+  annotations: {}
+  # Пример для вашего формата:
+  # annotations:
+  #   avp.kubernetes.io/path: "infrastructure/data/grafana-minio-config"
+
+  # Secret data keys mapping
+  secretKeys:
+    grafanaToken: "GRAFANA_TOKEN"
+    grafanaAdminPassword: "GRAFANA_ADMIN_PASSWORD"
+    awsAccessKeyId: "AWS_ACCESS_KEY_ID"
+    awsSecretAccessKey: "AWS_SECRET_ACCESS_KEY"
