@@ -8,6 +8,7 @@ requires = [
     'requests',
     'docopt',
     'boto3',
+    'python-dotenv',
     'azure-storage-blob',
     'google-cloud-storage',
     'influxdb',

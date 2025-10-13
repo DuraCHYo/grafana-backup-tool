@@ -8,12 +8,11 @@ ENV ARCHIVE_FILE=""
 ENV DEV_PACKAGES="gcc libc-dev libffi-dev py3-pip python3-dev"
 ENV PACKAGES="bash ca-certificates py3-cffi py3-cryptography py3-six py3-packaging"
 
-# Рабочая директория
 WORKDIR /opt/grafana-backup-tool
 
 ADD . /opt/grafana-backup-tool
 
-# Устанавливаем системные зависимости и Python-пакеты в одном слое
+# Use Python venv
 RUN apk add --no-cache ${DEV_PACKAGES} ${PACKAGES} \
     && python3 -m venv /opt/venv \
     && . /opt/venv/bin/activate \
