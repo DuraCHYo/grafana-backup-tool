@@ -1,5 +1,5 @@
 # Grafana Backup Tool
-
+This is a Fork from [THIS REPO](https://github.com/ysde/grafana-backup-tool)
 A Python-based application to backup Grafana settings using the [Grafana API](https://grafana.com/docs/grafana/latest/http_api/).
 
 The aim of this tool is to:
@@ -35,7 +35,7 @@ The aim of this tool is to:
 
 ## Requirements
 * Bash
-* Python 2.7 or Python 3.x
+* Python 3.x
 * Access to a Grafana API server.
 * A `Token` of an `Admin` role (see `Configuration` section below for more info)
 
@@ -68,7 +68,6 @@ To create and obtain a `Token` for your Grafana server, please refer to the [off
 **NOTE** that you need to generate a `Token` with an `Admin` role for the backup to succeed, otherwise you will have potential permission issues.
 
 ## Installation
-### Docker Image available on [Docker Hub](https://hub.docker.com/r/dealfa/grafana-backup-tool) 
 ### Virtual environment (optional but recommended)
 Create a virtualenv, you could using something like `pyenv` if you'd prefer
 ```
@@ -76,15 +75,10 @@ virtualenv -p $(which python3) venv
 source venv/bin/activate
 ```
 
-### Installation using pypi
-```
-pip install grafana-backup
-```
-
 ### Installation using this repo
 First clone this repo
 ```
-git clone https://github.com/ysde/grafana-backup-tool.git
+git clone https://github.com/DuraCHYo/grafana-backup-tool.git
 cd grafana-backup-tool
 ```
 Installation works best using `pip`
@@ -116,14 +110,16 @@ $ grafana-backup restore _OUTPUT_/202006272027.tar.gz
 ```
 
 ## Docker
+### Docker Image available on [Docker Hub](https://hub.docker.com/r/dealfa/grafana-backup-tool) 
 Replace variables below to use the Docker version of this tool
 * `{YOUR_GRAFANA_TOKEN}`: Your Grafana site `Token`.
 * `{YOUR_GRAFANA_URL}`: Your Grafana site `URL`.
 * `{YOUR_BACKUP_FOLDER_ON_THE_HOST}`: The `backup folder` on the Grafana host machine.
 
 ## Kubernetes
+### Helm Chart is available from [v1.4.5 release](charts)
 Check out the CronJob in [examples](examples) for a simple example of how grafana-backup-tool
-can be ran within a Kubernetes environment
+can be ran without Helm
 
 ### Backup
 
@@ -141,7 +137,7 @@ docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
            -e GRAFANA_ADMIN_PASSWORD={YOUR_GRAFANA_ADMIN_PASSWORD} \
            -e VERIFY_SSL={True/False} \
            -v {YOUR_BACKUP_FOLDER_ON_THE_HOST}:/opt/grafana-backup-tool/_OUTPUT_  \
-           ysde/docker-grafana-backup-tool
+           DuraCHYo/docker-grafana-backup-tool
 ```
 
 ***Example:***
@@ -154,10 +150,10 @@ docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
            -e GRAFANA_ADMIN_PASSWORD=adminpassword \
            -e VERIFY_SSL=False \
            -v /tmp/backup/:/opt/grafana-backup-tool/_OUTPUT_ \
-           ysde/docker-grafana-backup-tool
+           DuraCHYo/docker-grafana-backup-tool
 ```
 
-***S3 Example:*** Set S3 configurations in `-e` or `grafanaSettings.json`([example](https://github.com/ysde/grafana-backup-tool/blob/master/examples/grafana-backup.example.json))
+***S3 Example:*** Set S3 configurations in `-e` or `grafanaSettings.json`([example](https://github.com/DuraCHYo/grafana-backup-tool/blob/master/examples/grafanaSettings.example.json))
 ```
            -e AWS_S3_BUCKET_NAME="my-backups-bucket" \
            -e AWS_S3_BUCKET_KEY="grafana-backup-folder" \
@@ -166,13 +162,13 @@ docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
            -e AWS_SECRET_ACCESS_KEY="secret" \
 ```
 
-***Azure Example:*** Set Azure configurations in `-e` or `grafanaSettings.json`([example](https://github.com/ysde/grafana-backup-tool/blob/master/examples/grafana-backup.example.json))
+***Azure Example:*** Set Azure configurations in `-e` or `grafanaSettings.json`([example](https://github.com/DuraCHYo/grafana-backup-tool/blob/master/examples/grafanaSettings.example.json))
 ```
 		   -e AZURE_STORAGE_CONTAINER_NAME="azure-storage-container-name" \
 		   -e AZURE_STORAGE_CONNECTION_STRING="azure-storage-connection-string"
 ```
 
-***GCS Example:*** Set GCS configurations in `-e` or `grafanaSettings.json`([example](https://github.com/ysde/grafana-backup-tool/blob/master/examples/grafana-backup.example.json))
+***GCS Example:*** Set GCS configurations in `-e` or `grafanaSettings.json`([example](https://github.com/DuraCHYo/grafana-backup-tool/blob/master/examples/grafanaSettings.example.json))
 ```
 		   -e GCS_BUCKET_NAME="backups-bucket-name" \
 		   -e GCS_BUCKET_PATH="grafana-backup-folder" \
@@ -193,7 +189,7 @@ docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
            -e RESTORE="true" \
            -e ARCHIVE_FILE={THE_ARCHIVED_FILE_NAME} \
            -v {YOUR_BACKUP_FOLDER_ON_THE_HOST}:/opt/grafana-backup-tool/_OUTPUT_  \
-           ysde/docker-grafana-backup-tool
+           DuraCHYo/docker-grafana-backup-tool
 ```
 
 ***Example:***
@@ -208,11 +204,18 @@ docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
            -e RESTORE="true" \
            -e ARCHIVE_FILE="202006280247.tar.gz" \
            -v /tmp/backup/:/opt/grafana-backup-tool/_OUTPUT_ \
-           ysde/docker-grafana-backup-tool
+           DuraCHYo/docker-grafana-backup-tool
+```
+
+### Contribution
+Docker-compose is available in tests dir. He uses grafana and minio to test puts backup in S3.
+Also, for simple debug you can run TUI script
+```bash
+cd ./tests && PYTHONPATH=.. python3 grafana_backup_tui.py
 ```
 
 ### Building
-You can build the docker image simply by executing `make` in the root of this repo. The image will get tagged as `ysde:grafana-backup`
+You can build the docker image simply by executing `make` in the root of this repo. The image will get tagged as `DuraCHYo:grafana-backup-tool`
 
 ### Monitoring
 InfluxDB support has been added and Prometheus push gateway support will be added in the future.

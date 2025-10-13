@@ -3,26 +3,21 @@ FROM alpine:latest
 ENV RESTORE=false
 ENV ARCHIVE_FILE=""
 
-ENV DEV_PACKAGES="gcc libc-dev libffi-dev py3-pip python3-dev"
-ENV PACKAGES="bash ca-certificates py3-cffi py3-cryptography py3-six py3-packaging"
-
 WORKDIR /opt/grafana-backup-tool
-
 ADD . /opt/grafana-backup-tool
 
-# Use Python venv
-RUN apk add --no-cache ${DEV_PACKAGES} ${PACKAGES} \
-    && python3 -m venv /opt/venv \
-    && . /opt/venv/bin/activate \
-    && pip install --no-cache-dir . \
-    && chmod -R a+r /opt/grafana-backup-tool \
-    && find /opt/grafana-backup-tool -type d -print0 | xargs -0 chmod a+rx \
-    && chown -R 1337:1337 /opt/grafana-backup-tool \
-    && apk del ${DEV_PACKAGES}
+RUN apk add --no-cache bash ca-certificates python3 py3-pip && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir -e . && \
+    chmod -R a+r /opt/grafana-backup-tool && \
+    find /opt/grafana-backup-tool -type d -print0 | xargs -0 chmod a+rx && \
+    chown -R 1337:1337 /opt/grafana-backup-tool
 
 USER 1337
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH="/opt/grafana-backup-tool:$PYTHONPATH"
 
-CMD sh -c '. /opt/venv/bin/activate && if [ "$RESTORE" = "true" ]; then \
+CMD sh -c 'if [ "$RESTORE" = "true" ]; then \
     if [ ! -z "$AWS_S3_BUCKET_NAME" ] || [ ! -z "$AZURE_STORAGE_CONTAINER_NAME" ] || [ ! -z "$GCS_BUCKET_NAME" ]; then \
         grafana-backup restore $ARCHIVE_FILE; \
     else \
