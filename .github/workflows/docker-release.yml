@@ -162,10 +162,10 @@ jobs:
           echo "" >> "$RELEASE_NOTES_FILE"
           
           if [ -n "$PREV_TAG" ]; then
-            echo "Changes since **$PREV_TAG**:\\n" >> "$RELEASE_NOTES_FILE"
+            echo "Changes since **$PREV_TAG**:" >> "$RELEASE_NOTES_FILE"
             git log --pretty=format:"- \`%h\` %s" --no-merges "$PREV_TAG"..HEAD >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- No commits found" >> "$RELEASE_NOTES_FILE"
           else
-            echo "All commits in this release:\\n" >> "$RELEASE_NOTES_FILE"
+            echo "All commits in this release:" >> "$RELEASE_NOTES_FILE"
             git log --pretty=format:"- \`%h\` %s" --no-merges -30 >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- Could not retrieve commits" >> "$RELEASE_NOTES_FILE"
           fi
           
