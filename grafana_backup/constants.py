@@ -1,10 +1,7 @@
 import os
 
 
-if os.name == "nt":
-    homedir = os.environ["HOMEPATH"]
-else:
-    homedir = os.environ["HOME"]
+homedir = os.path.expanduser("~")
 
 PKG_NAME = "grafana-backup"
 PKG_VERSION = "1.4.2"
