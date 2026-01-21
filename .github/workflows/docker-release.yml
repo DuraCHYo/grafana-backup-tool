@@ -67,7 +67,7 @@ jobs:
           images: |
             dealfa/grafana-backup-tool
           tags: |
-            type=semver,pattern={{version}}
+            type=semver,pattern={{version}},prefix=v
             latest
 
       - name: Set up Docker Buildx
