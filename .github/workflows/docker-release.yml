@@ -20,9 +20,7 @@ jobs:
           images: |
             dealfa/grafana-backup-tool
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern=v{{version}}
             latest
 
       - name: Set up QEMU
