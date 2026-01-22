@@ -31,7 +31,7 @@ def grafana_auth():
 
 def create_service_account(auth):
     url = f"{GRAFANA_URL}/api/serviceaccounts"
-    payload = {"name": "grafana-backup-tool", "role": "Admin"}
+    payload = {"name": "grafana-backup-tool", "role": "Admin","isDisabled": False}
     r = requests.post(url, json=payload, auth=auth, timeout=30)
     r.raise_for_status()
     return r.json()["id"]

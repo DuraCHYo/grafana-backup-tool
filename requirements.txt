@@ -8,3 +8,6 @@ protobuf~=6.32.1
 requests~=2.32.5
 packaging~=24.2
 azure-core~=1.35.1
+azure-storage-blob~=12.28.0
+google-api-core~=2.29.0
+google-cloud-storage~=3.8.0
