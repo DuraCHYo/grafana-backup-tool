@@ -29,6 +29,7 @@ def main(config_path):
     backup_file_format = config.get('general', {}).get('backup_file_format', '%Y%m%d%H%M')
     uid_dashboard_slug_suffix = config.get('general', {}).get('uid_dashboard_slug_suffix', False)
     pretty_print = config.get('general', {}).get('pretty_print', False)
+    backup_workers = config.get('general', {}).get('backup_workers', 3)
 
     # Cloud storage settings - AWS
     aws_s3_bucket_name = config.get('aws', {}).get('s3_bucket_name', '')
@@ -117,6 +118,8 @@ def main(config_path):
     if isinstance(PRETTY_PRINT, str):
         PRETTY_PRINT = json.loads(PRETTY_PRINT.lower())  # convert environment variable string to bool
 
+    BACKUP_WORKERS = int(os.getenv('BACKUP_WORKERS', backup_workers))
+
     EXTRA_HEADERS = dict(
         h.split(':') for h in os.getenv('GRAFANA_HEADERS', '').split(',') if 'GRAFANA_HEADERS' in os.environ)
 
@@ -163,6 +166,7 @@ def main(config_path):
     config_dict['BACKUP_DIR'] = BACKUP_DIR
     config_dict['BACKUP_FILE_FORMAT'] = BACKUP_FILE_FORMAT
     config_dict['PRETTY_PRINT'] = PRETTY_PRINT
+    config_dict['BACKUP_WORKERS'] = BACKUP_WORKERS
     config_dict['UID_DASHBOARD_SLUG_SUFFIX'] = UID_DASHBOARD_SLUG_SUFFIX
     config_dict['EXTRA_HEADERS'] = EXTRA_HEADERS
     config_dict['HTTP_GET_HEADERS'] = HTTP_GET_HEADERS
