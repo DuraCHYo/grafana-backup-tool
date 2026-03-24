@@ -5,7 +5,7 @@ import shutil
 import unittest
 from unittest.mock import patch, MagicMock
 
-from grafana_backup.save_dashboards import (
+from grafana_backup.save.save_dashboards import (
     get_individual_dashboard_setting_and_save,
     build_filename,
 )
@@ -48,7 +48,7 @@ class TestGetIndividualDashboardSettingAndSave(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
-    @patch('grafana_backup.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_ok)
+    @patch('grafana_backup.save.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_ok)
     def test_sequential_dashboard_save(self, mock_get):
         """With workers=1, dashboards are fetched and saved sequentially."""
         dashboards = [_make_board('uid-1', 'Dashboard One'), _make_board('uid-2', 'Dashboard Two')]
@@ -64,7 +64,7 @@ class TestGetIndividualDashboardSettingAndSave(unittest.TestCase):
         self.assertIn('uid/uid-1', lines[0])
         self.assertIn('uid/uid-2', lines[1])
 
-    @patch('grafana_backup.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_ok)
+    @patch('grafana_backup.save.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_ok)
     def test_parallel_dashboard_save(self, mock_get):
         """With workers=3, all dashboards are fetched and saved."""
         dashboards = [_make_board('uid-{0}'.format(i), 'Dashboard {0}'.format(i)) for i in range(5)]
@@ -81,7 +81,7 @@ class TestGetIndividualDashboardSettingAndSave(unittest.TestCase):
         for i in range(5):
             self.assertIn('uid/uid-{0}'.format(i), log_content)
 
-    @patch('grafana_backup.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_mixed)
+    @patch('grafana_backup.save.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_mixed)
     def test_parallel_handles_failed_dashboard(self, mock_get):
         """Failed dashboards (non-200) are skipped, others still saved."""
         dashboards = [
@@ -110,7 +110,7 @@ class TestGetIndividualDashboardSettingAndSave(unittest.TestCase):
         log_path = os.path.join(self.test_dir, self.log_file)
         self.assertFalse(os.path.exists(log_path))
 
-    @patch('grafana_backup.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_ok)
+    @patch('grafana_backup.save.save_dashboards.get_dashboard', side_effect=_mock_get_dashboard_ok)
     def test_sequential_fallback_with_zero_workers(self, mock_get):
         """workers=0 should use sequential fallback."""
         dashboards = [_make_board('uid-1', 'Dashboard One')]

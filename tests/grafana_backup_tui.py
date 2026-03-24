@@ -53,8 +53,8 @@ def ensure_s3_bucket():
     s3 = boto3.client(
         "s3",
         endpoint_url=MINIO_ENDPOINT,
-        aws_access_key_id=os.getenv("MINIO_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("MINIO_SECRET_ACCESS_KEY"),
+        s3_access_key_id=os.getenv("MINIO_ACCESS_KEY_ID"),
+        s3_secret_access_key=os.getenv("MINIO_SECRET_ACCESS_KEY"),
         region_name=os.getenv("MINIO_DEFAULT_REGION", "us-east-1"),
     )
     try:

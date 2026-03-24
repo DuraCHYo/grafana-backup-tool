@@ -18,11 +18,11 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONPATH="/opt/grafana-backup-tool:$PYTHONPATH"
 
 CMD sh -c 'if [ "$RESTORE" = "true" ]; then \
-    if [ ! -z "$AWS_S3_BUCKET_NAME" ] || [ ! -z "$AZURE_STORAGE_CONTAINER_NAME" ] || [ ! -z "$GCS_BUCKET_NAME" ]; then \
-        grafana-backup restore $ARCHIVE_FILE; \
+    if [ ! -z "$S3_BUCKET_NAME" ] || [ ! -z "$AZURE_STORAGE_CONTAINER_NAME" ] || [ ! -z "$GCS_BUCKET_NAME" ]; then \
+    grafana-backup restore $ARCHIVE_FILE; \
     else \
-        grafana-backup restore _OUTPUT_/$ARCHIVE_FILE; \
+    grafana-backup restore _OUTPUT_/$ARCHIVE_FILE; \
     fi \
-else \
+    else \
     grafana-backup save; \
-fi'
+    fi'
