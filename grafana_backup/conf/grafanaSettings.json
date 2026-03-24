@@ -7,7 +7,8 @@
     "backup_dir": "_OUTPUT_",
     "backup_file_format": "%Y%m%d%H%M",
     "uid_dashboard_slug_suffix": false,
-    "pretty_print": false
+    "pretty_print": false,
+    "backup_workers": 3
   },
   "grafana": {
     "url": "http://localhost:3000",

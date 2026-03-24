@@ -5,6 +5,9 @@ import sys
 from grafana_backup.commons import log_response, to_python2_and_3_compatible_string
 from packaging import version
 
+# Module-level session for connection pooling (HTTP keep-alive)
+_session = requests.Session()
+
 
 def health_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug):
     url = '{0}/api/health'.format(grafana_url)
@@ -511,7 +514,7 @@ def get_grafana_version(grafana_url, verify_ssl, http_get_headers):
 
 
 def send_grafana_get(url, http_get_headers, verify_ssl, client_cert, debug):
-    r = requests.get(url, headers=http_get_headers, verify=verify_ssl, cert=client_cert)
+    r = _session.get(url, headers=http_get_headers, verify=verify_ssl, cert=client_cert)
 
     if debug:
         log_response(r)

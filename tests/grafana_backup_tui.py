@@ -11,7 +11,9 @@ from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 
 load_dotenv()
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 OUTPUT_DIR = "../_OUTPUT_"
@@ -21,6 +23,7 @@ GRAFANA_URL = os.getenv("GRAFANA_URL", "http://localhost:3000")
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT_URL")
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "grafana-backup")
 
+
 # ---------------- GRAFANA UTILS ----------------
 def grafana_auth():
     user = os.getenv("GRAFANA_ADMIN_USER")
@@ -29,12 +32,14 @@ def grafana_auth():
         raise ValueError("Missing GRAFANA_ADMIN_USER or GRAFANA_ADMIN_PASSWORD")
     return HTTPBasicAuth(user, password)
 
+
 def create_service_account(auth):
     url = f"{GRAFANA_URL}/api/serviceaccounts"
-    payload = {"name": "grafana-backup-tool", "role": "Admin"}
+    payload = {"name": "grafana-backup-tool", "role": "Admin", "isDisabled": False}
     r = requests.post(url, json=payload, auth=auth, timeout=30)
     r.raise_for_status()
     return r.json()["id"]
+
 
 def create_service_account_token(auth, account_id):
     url = f"{GRAFANA_URL}/api/serviceaccounts/{account_id}/tokens"
@@ -42,6 +47,7 @@ def create_service_account_token(auth, account_id):
     r = requests.post(url, json=payload, auth=auth, timeout=30)
     r.raise_for_status()
     return r.json()["key"]
+
 
 def ensure_s3_bucket():
     s3 = boto3.client(
@@ -59,23 +65,21 @@ def ensure_s3_bucket():
     except Exception as e:
         logging.warning("Bucket create failed: %s", e)
 
+
 def build_config(token):
     return {
-        "grafana": {
-            "url": GRAFANA_URL,
-            "token": token,
-            "verify_ssl": False
-        },
+        "grafana": {"url": GRAFANA_URL, "token": token, "verify_ssl": False},
         "providers": {
             "s3": {
                 "bucket": S3_BUCKET_NAME,
                 "endpoint_url": MINIO_ENDPOINT,
                 "access_key": os.getenv("MINIO_ACCESS_KEY_ID"),
                 "secret_key": os.getenv("MINIO_SECRET_ACCESS_KEY"),
-                "region": os.getenv("MINIO_DEFAULT_REGION", "us-east-1")
+                "region": os.getenv("MINIO_DEFAULT_REGION", "us-east-1"),
             }
-        }
+        },
     }
+
 
 def write_temp_config(config):
     tmp = tempfile.NamedTemporaryFile("w+", delete=False)
@@ -83,6 +87,7 @@ def write_temp_config(config):
     tmp.flush()
     tmp.close()
     return tmp.name
+
 
 # ---------------- ACTIONS ----------------
 def do_backup():
@@ -94,12 +99,13 @@ def do_backup():
     cfg_path = write_temp_config(build_config(token))
     try:
         subprocess.run(
-            ["python", "-m" ,"grafana_backup.cli","save", "--config", cfg_path],
-            check=True
+            ["python", "-m", "grafana_backup.cli", "save", "--config", cfg_path],
+            check=True,
         )
         logging.info("Backup completed successfully.")
     finally:
         os.remove(cfg_path)
+
 
 def do_restore():
     files = [f for f in os.listdir(OUTPUT_DIR) if f.endswith(".tar.gz")]
@@ -116,12 +122,21 @@ def do_restore():
     cfg_path = write_temp_config(build_config(token))
     try:
         subprocess.run(
-            ["python", "-m" ,"grafana_backup.cli", "restore", "--config", cfg_path, archive_path],
-            check=True
+            [
+                "python",
+                "-m",
+                "grafana_backup.cli",
+                "restore",
+                "--config",
+                cfg_path,
+                archive_path,
+            ],
+            check=True,
         )
         logging.info("Restore completed successfully.")
     finally:
         os.remove(cfg_path)
+
 
 # ---------------- MAIN MENU ----------------
 def main():
@@ -141,6 +156,7 @@ def main():
             do_restore()
         else:
             break
+
 
 if __name__ == "__main__":
     main()

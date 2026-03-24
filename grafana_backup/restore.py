@@ -95,8 +95,9 @@ def main(args, settings):
     restore_functions['team'] = create_team
     restore_functions['team_member'] = create_team_member
     restore_functions['folder_permission'] = update_folder_permissions
-    restore_functions['alert_rule'] = create_alert_rule
     restore_functions['contact_point'] = create_contact_point
+    restore_functions['alert_rule'] = create_alert_rule
+
     # There are some issues of notification policy restore api, it will lock the notification policy page and cannot be edited.
     # restore_functions['notification_policys'] = update_notification_policy
 

@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+# .github/workflows/docker-release.yml
+>>>>>>> master
 name: Docker Build and Release
 
 on:
@@ -5,12 +9,67 @@ on:
     tags:
       - 'v*.*.*'
 
+<<<<<<< HEAD
 jobs:
   docker:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
+=======
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  validate-changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changelog: ${{ steps.check.outputs.has_changelog }}
+      version_exists: ${{ steps.check.outputs.version_exists }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "TAG=${TAG}" >> $GITHUB_OUTPUT
+          echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Check CHANGELOG.md
+        id: check
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "has_changelog=true" >> $GITHUB_OUTPUT
+            # Проверяем, есть ли запись для этой версии в CHANGELOG
+            if grep -q "^\#\# \[${{ steps.get_version.outputs.TAG }}\]" CHANGELOG.md; then
+              echo "version_exists=true" >> $GITHUB_OUTPUT
+            else
+              echo "version_exists=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_changelog=false" >> $GITHUB_OUTPUT
+            echo "version_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Warn if no CHANGELOG entry
+        if: steps.check.outputs.has_changelog == 'true' && steps.check.outputs.version_exists == 'false'
+        run: |
+          echo "⚠️  Warning: No entry found in CHANGELOG.md for version ${{ steps.get_version.outputs.TAG }}"
+          echo "Continuing anyway, but please update CHANGELOG.md for future releases."
+
+  docker:
+    needs: validate-changelog
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+>>>>>>> master
         uses: actions/checkout@v4
 
       - name: Docker meta
@@ -20,6 +79,7 @@ jobs:
           images: |
             dealfa/grafana-backup-tool
           tags: |
+<<<<<<< HEAD
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -28,6 +88,11 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
+=======
+            type=semver,pattern={{version}},prefix=v
+            latest
+
+>>>>>>> master
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -42,6 +107,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+<<<<<<< HEAD
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -77,5 +143,134 @@ jobs:
           body_path: release_notes.md
           draft: false
           prerelease: false
+=======
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  release:
+    needs: [validate-changelog, docker]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate intelligent release notes
+        id: generate_notes
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+          
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          RELEASE_NOTES_FILE="release_notes_generated.md"
+          
+          cat > "$RELEASE_NOTES_FILE" << EOF
+          # 🚀 Grafana Backup Tool $TAG
+          
+          **Automated backup solution for Grafana configurations**
+          
+          ## 📦 Docker Image
+          
+          | | |
+          |:---|:---|
+          | **Image** | \`dealfa/grafana-backup-tool\` |
+          | **Tag** | \`$TAG\` |
+          | **Pull Command** | \`docker pull dealfa/grafana-backup-tool:$TAG\` |
+          | **Docker Hub** | [dealfa/grafana-backup-tool](https://hub.docker.com/r/dealfa/grafana-backup-tool) |
+          
+          EOF
+          
+          if [ -f "CHANGELOG.md" ]; then
+            echo "## 📝 Changelog" >> "$RELEASE_NOTES_FILE"
+            echo "" >> "$RELEASE_NOTES_FILE"
+            
+            CHANGELOG_SECTION=$(awk "/^## \\[$TAG\\] - /{flag=1; print; next} /^## \\[/{if(flag) flag=0} flag" CHANGELOG.md)
+            
+            if [ -n "$CHANGELOG_SECTION" ]; then
+              # Преобразуем markdown для лучшего отображения
+              echo "$CHANGELOG_SECTION" | sed 's/^###/###/' >> "$RELEASE_NOTES_FILE"
+            else
+              echo "No detailed changelog entry for this version." >> "$RELEASE_NOTES_FILE"
+              echo "" >> "$RELEASE_NOTES_FILE"
+              
+              echo "### Recent Commits:" >> "$RELEASE_NOTES_FILE"
+              echo "" >> "$RELEASE_NOTES_FILE"
+              if [ -n "$PREV_TAG" ]; then
+                git log --pretty=format:"- **%h** %s _(by %an)_" "$PREV_TAG"..HEAD >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- Could not retrieve commits" >> "$RELEASE_NOTES_FILE"
+              else
+                git log --pretty=format:"- **%h** %s _(by %an)_" -20 >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- Could not retrieve commits" >> "$RELEASE_NOTES_FILE"
+              fi
+            fi
+          else
+            echo "## 📝 Recent Changes" >> "$RELEASE_NOTES_FILE"
+            echo "" >> "$RELEASE_NOTES_FILE"
+            if [ -n "$PREV_TAG" ]; then
+              git log --pretty=format:"- **%h** %s _(by %an)_" "$PREV_TAG"..HEAD >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- No previous tag found" >> "$RELEASE_NOTES_FILE"
+            else
+              git log --pretty=format:"- **%h** %s _(by %an)_" -20 >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- Initial release" >> "$RELEASE_NOTES_FILE"
+            fi
+          fi
+          
+          echo "" >> "$RELEASE_NOTES_FILE"
+          echo "## 🔍 Full Commit History" >> "$RELEASE_NOTES_FILE"
+          echo "" >> "$RELEASE_NOTES_FILE"
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "Changes since **$PREV_TAG**:" >> "$RELEASE_NOTES_FILE"
+            git log --pretty=format:"- \`%h\` %s" --no-merges "$PREV_TAG"..HEAD >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- No commits found" >> "$RELEASE_NOTES_FILE"
+          else
+            echo "All commits in this release:" >> "$RELEASE_NOTES_FILE"
+            git log --pretty=format:"- \`%h\` %s" --no-merges -30 >> "$RELEASE_NOTES_FILE" 2>/dev/null || echo "- Could not retrieve commits" >> "$RELEASE_NOTES_FILE"
+          fi
+          
+          cat >> "$RELEASE_NOTES_FILE" << EOF
+          
+          ---
+          
+          ## 🚀 Quick Start
+          
+          \`\`\`bash
+          # Pull the image
+          docker pull dealfa/grafana-backup-tool:$TAG
+          \`\`\`
+          
+          ## 📚 Documentation
+          
+          - [Full README](https://github.com/${{ github.repository }}/blob/main/README.md)
+          - [Configuration Options](https://github.com/${{ github.repository }}/blob/main/docs/CONFIGURATION.md)
+          - [Troubleshooting Guide](https://github.com/${{ github.repository }}/blob/main/docs/TROUBLESHOOTING.md)
+          
+          ## 🔗 Links
+          
+          - **GitHub**: [View Repository](https://github.com/${{ github.repository }})
+          - **Docker Hub**: [dealfa/grafana-backup-tool](https://hub.docker.com/r/dealfa/grafana-backup-tool)
+          - **Issues**: [Report a Bug](https://github.com/${{ github.repository }}/issues/new)
+          - **Releases**: [All Versions](https://github.com/${{ github.repository }}/releases)
+          
+          ---
+          
+          *This release was automatically generated by [GitHub Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).*  
+          *Docker image build: \`#${{ github.run_number }}\`*
+          EOF
+          
+          echo "Generated release notes:"
+          cat "$RELEASE_NOTES_FILE"
+          
+          echo "notes_file=$RELEASE_NOTES_FILE" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: ${{ steps.generate_notes.outputs.notes_file }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+>>>>>>> master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
