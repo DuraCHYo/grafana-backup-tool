@@ -11,3 +11,4 @@ azure-core~=1.35.1
 azure-storage-blob~=12.28.0
 google-api-core~=2.29.0
 google-cloud-storage~=3.8.0
+s3lib==2.2.0

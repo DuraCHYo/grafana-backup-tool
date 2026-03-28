@@ -1,226 +1,158 @@
-# Grafana Backup Tool
-This is a Fork from [THIS REPO](https://github.com/ysde/grafana-backup-tool)
-A Python-based application to backup Grafana settings using the [Grafana API](https://grafana.com/docs/grafana/latest/http_api/).
+# 📊 Grafana Backup Tool (Modern Fork)
 
-The aim of this tool is to:
-1. Easily backup and restore Grafana.
-2. Have versioned backups`(date and time in file name)` for restoring and saving to cloud storage providers. Currently support
-   1. `Amazon S3`
-   2. `Azure Storage`
-   3. `GCP Cloud Storage` (Use service-account's credential file, [see here](https://cloud.google.com/storage/docs/reference/libraries#linux-or-macos))
+[![Python 3.x](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/)
+[![Grafana Support](https://img.shields.io/badge/grafana-v12.x-orange.svg)](https://grafana.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Supported components
-* Folder
-* Folder Permissions
-* Library Elements (doesn't work with Grafana 8.0.0 but 8.4.3)
-* Dashboard (contains Alert)
-* Datasource
-* Alert Channel
-* Alert Rules (Supported in version 9.4.0 of grafana and up.)
-* Teams
-* Team Members (Needs Basic Authentication (username and password, see [grafana doc](https://grafana.com/docs/grafana/latest/http_api/org/#admin-organizations-api))
-    * You need to set `Admin's account and password` in `grafanaSettings.json`, or set the base64 encoded `admin account and password` in ENV `GRAFANA_BASIC_AUTH`. E.g `export GRAFANA_BASIC_AUTH=YWRtaW46YWRtaW4=`
-    * Or Sets this ENV of the Grafana server `GF_USERS_ALLOW_ORG_CREATE=true`. see [grafana doc](https://grafana.com/docs/grafana/latest/http_api/org/#create-organization)
-* Organization (Needs Basic Authentication (username and password, see [grafana doc](https://grafana.com/docs/grafana/latest/http_api/org/#admin-organizations-api))
-    * You need to set `Admin's account and password` in `grafanaSettings.json`, or set the base64 encoded `admin account and password` in ENV `GRAFANA_BASIC_AUTH`. E.g `export GRAFANA_BASIC_AUTH=YWRtaW46YWRtaW4=`
-    * Or Sets this ENV of the Grafana server `GF_USERS_ALLOW_ORG_CREATE=true`. see [grafana doc](https://grafana.com/docs/grafana/latest/http_api/org/#create-organization)
-* User (Needs Basic Authentication (username and password, see [grafana doc](https://grafana.com/docs/grafana/latest/http_api/org/#admin-organizations-api))
-    * You need to set `Admin's account and password` in `grafanaSettings.json`, or set the base64 encoded `admin account and password` in ENV `GRAFANA_BASIC_AUTH`. E.g `export GRAFANA_BASIC_AUTH=YWRtaW46YWRtaW4=`
-    * Grafana's api doesn't provide user's password when backing up, so the `default_user_password` in `grafanaSettings.json`, or in ENV `DEFAULT_USER_PASSWORD`, E.g `export DEFAULT_USER_PASSWORD=supersecret` will be used when restoring. 
-* Snapshots
-* Dashboard Versions (only backup, no restore)
-* Annotations
+A powerful Python-based tool to backup and restore Grafana settings via API.  
+This is a **maintained fork** of [ysde/grafana-backup-tool](https://github.com/ysde/grafana-backup-tool), updated for modern Grafana versions.
 
-**NOTE** The only supported `orgId` right now is `1`, the default organization will be backed up only!
+> [!IMPORTANT]
+> **Why use this fork?** > Unlike the original tool, this version fully supports **Grafana 12.x** and fixes the critical bugs that has existed since Grafana 8.0.0.
 
-## Requirements
-* Bash
-* Python 3.x
-* Access to a Grafana API server.
-* A `Token` of an `Admin` role (see `Configuration` section below for more info)
+---
 
-## Configuration
-There are three ways to setup the configuration:
+## 📑 Table of Contents
+- [📊 Grafana Backup Tool (Modern Fork)](#-grafana-backup-tool-modern-fork)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [🚀 Quick Start](#-quick-start)
+  - [✨ Key Improvements](#-key-improvements)
+  - [📦 Supported Components](#-supported-components)
+  - [⚙️ Configuration](#️-configuration)
+    - [Core Variables](#core-variables)
+  - [🛠 Installation](#-installation)
+    - [Using Virtual Environment](#using-virtual-environment)
+  - [🐳 Docker \& Kubernetes](#-docker--kubernetes)
+    - [Docker](#docker)
+    - [Kubernetes](#kubernetes)
+  - [☁️ Cloud Storage](#️-cloud-storage)
+    - [Amazon S3](#amazon-s3)
+    - [Azure Blob Storage](#azure-blob-storage)
+    - [Google Cloud Storage (GCS)](#google-cloud-storage-gcs)
+    - [AIStor ex. MinIO](#aistor-ex-minio)
+  - [💡 Future Ideas](#-future-ideas)
+  - [🤝 Contribution](#-contribution)
 
-1. Use `environment variables` to define the variables for connecting to a Grafana server.
-2. Use `hard-coded settings` in `conf/grafanaSettings.json` (this is the default settings file if not specified otherwise).
-3. Use `~/.grafana-backup.json` to define variables in json format.
+---
 
-### Example Config
-* Copy [grafanaSettings.example.json](examples/grafanaSettings.example.json) and modify it for you to use, remove `azure`, `aws`, `gcp`, `influxdb` blocks (but keep the ones you used).
-* Check out the [examples](examples) folder for more configuration details.
-
-**NOTE** If you use `environment variables`, you need to add the following to your `.bashrc` or execute once before using the tool (please change variables according to your setup):
-
-(`GRAFANA_HEADERS` is optional, use it if necessary. please see [#45](https://github.com/ysde/grafana-backup-tool/issues/45))
+## 🚀 Quick Start
+If you just want to run a quick backup to a local folder:
 
 ```bash
-### Do not use a trailing slash on GRAFANA_URL
-export GRAFANA_URL=http://some.host.org:3000
-export GRAFANA_TOKEN=eyJrIjoidUhaU2ZQQndrWFN3RRVkUnVfrT56a1JoaG9KWFFObEgiLCJuIjoiYWRtaW4iLCJpZCI6MX0=
-
-# GRAFANA_HEADERS is optional
-export GRAFANA_HEADERS=Host:some.host.org
+export GRAFANA_URL=http://your-grafana:3000
+export GRAFANA_TOKEN=your_admin_token
+pip install .
+grafana-backup save
 ```
 
-To create and obtain a `Token` for your Grafana server, please refer to the [official documentation](https://grafana.com/docs/grafana/latest/http_api/auth/).
+---
 
-**NOTE** that you need to generate a `Token` with an `Admin` role for the backup to succeed, otherwise you will have potential permission issues.
+## ✨ Key Improvements
+* ✅ **Grafana 11.x Ready**: Fixed authentication and API schema changes.
+* ✅ **Library Panels Fix**: Proper restoration of library elements (tested v8.4.3 to v11.x).
+* ✅ **Unified Alerting**: Support for Alert Rules, Contact Points, and Policies (v9.4.0+).
+* ✅ **Security Updates**: Modernized base Docker images and dependencies.
 
-## Installation
-### Virtual environment (optional but recommended)
-Create a virtualenv, you could using something like `pyenv` if you'd prefer
-```
+---
+
+## 📦 Supported Components
+| Component          | Backup | Restore | Notes                     |
+| :----------------- | :----: | :-----: | :------------------------ |
+| **Dashboards**     |   ✅    |    ✅    | Includes embedded alerts  |
+| **Folders**        |   ✅    |    ✅    | Includes permissions      |
+| **Library Panels** |   ✅    |    ✅    | **Fixed in this fork**    |
+| **Datasources**    |   ✅    |    ✅    | -                         |
+| **Alert Rules**    |   ✅    |    ✅    | v9.4.0+ required          |
+| **Teams/Users**    |   ✅    |    ✅    | Requires Admin Basic Auth |
+| **Snapshots**      |   ✅    |    ✅    | -                         |
+
+---
+
+## ⚙️ Configuration
+You can configure the tool via `grafanaSettings.json` or **Environment Variables** (preferred).
+
+### Core Variables
+| Variable                 | Description                              | Required             |
+| :----------------------- | :--------------------------------------- | :------------------- |
+| `GRAFANA_URL`            | URL of your Grafana (no trailing slash)  | **Yes**              |
+| `GRAFANA_TOKEN`          | Admin API Token or Service Account Token | **Yes**              |
+| `GRAFANA_ADMIN_ACCOUNT`  | Admin username (for Teams/Users backup)  | No                   |
+| `GRAFANA_ADMIN_PASSWORD` | Admin password                           | No                   |
+| `VERIFY_SSL`             | Set to `False` for self-signed certs     | No (Default: `True`) |
+
+> [!TIP]
+> We highly recommend using a **Service Account Token** with Admin permissions.
+
+---
+
+## 🛠 Installation
+### Using Virtual Environment
+```bash
 virtualenv -p $(which python3) venv
 source venv/bin/activate
-```
-
-### Installation using this repo
-First clone this repo
-```
-git clone https://github.com/DuraCHYo/grafana-backup-tool.git
-cd grafana-backup-tool
-```
-Installation works best using `pip`
-```
 pip install .
 ```
 
-## How to Use
-* First perform the **Configuration** and **Installation** sections as described above.
-* Use the `grafana-backup save` command to backup all your folders, dashboards, datasources and alert channels to the `_OUTPUT_` subdirectory of the current directory.
+---
 
-***Example:***
-
+## 🐳 Docker & Kubernetes
+### Docker
 ```bash
-$ grafana-backup save
-$ tree _OUTPUT_
-_OUTPUT_/
-└── 202006272027.tar.gz
+docker run --rm --name grafana-backup-tool \
+  -e GRAFANA_TOKEN="your_token" \
+  -e GRAFANA_URL="http://grafana:3000" \
+  -v /tmp/backup:/opt/grafana-backup-tool/_OUTPUT_ \
+  dealfa/grafana-backup-tool:v1.5.0 grafana-backup save
 ```
 
-* Use the `grafana-backup restore <archive_file>` command with a path to a previous backup to restore everything.
+### Kubernetes
+- **Helm Chart**: Available in the `/charts` directory.
+- **CronJob**: See [examples/cronjob.yaml](examples) for scheduled backups.
 
-**NOTE** this *may* result in data loss, by overwriting data on the server.
+---
 
-***Example:***
+## ☁️ Cloud Storage
+The tool supports versioned archives automatically uploaded to any S3-compatible storages such as:
 
+### Amazon S3
 ```bash
-$ grafana-backup restore _OUTPUT_/202006272027.tar.gz
+-e AWS_S3_BUCKET_NAME="my-bucket" \
+-e AWS_DEFAULT_REGION="us-east-1" \
+-e AWS_ACCESS_KEY_ID="xxx" \
+-e AWS_SECRET_ACCESS_KEY="yyy"
 ```
 
-## Docker
-### Docker Image available on [Docker Hub](https://hub.docker.com/r/dealfa/grafana-backup-tool) 
-Replace variables below to use the Docker version of this tool
-* `{YOUR_GRAFANA_TOKEN}`: Your Grafana site `Token`.
-* `{YOUR_GRAFANA_URL}`: Your Grafana site `URL`.
-* `{YOUR_BACKUP_FOLDER_ON_THE_HOST}`: The `backup folder` on the Grafana host machine.
-
-## Kubernetes
-### Helm Chart is available from [v1.4.5 release](charts)
-Check out the CronJob in [examples](examples) for a simple example of how grafana-backup-tool
-can be ran without Helm
-
-### Backup
-
-If you decide to use a volume (-v) then you'll need to create the volume first with 1337 uid/gid ownership first, example:
-```
-mkdir /tmp/backup
-sudo chown 1337:1337 /tmp/backup
-```
-
-```
-docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
-           -e GRAFANA_TOKEN={YOUR_GRAFANA_TOKEN} \
-           -e GRAFANA_URL={YOUR_GRAFANA_URL} \
-           -e GRAFANA_ADMIN_ACCOUNT={YOUR_GRAFANA_ADMIN_ACCOUNT} \
-           -e GRAFANA_ADMIN_PASSWORD={YOUR_GRAFANA_ADMIN_PASSWORD} \
-           -e VERIFY_SSL={True/False} \
-           -v {YOUR_BACKUP_FOLDER_ON_THE_HOST}:/opt/grafana-backup-tool/_OUTPUT_  \
-           DuraCHYo/docker-grafana-backup-tool
-```
-
-***Example:***
-
-```
-docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
-           -e GRAFANA_TOKEN="eyJrIjoiNGZqTDEyeXNaY0RsMXNhbkNTSnlKN2M3bE1VeHdqVTEiLCJuIjoiZ3JhZmFuYS1iYWNrdXAiLCJpZCI6MX0=" \
-           -e GRAFANA_URL=http://192.168.0.79:3000 \
-           -e GRAFANA_ADMIN_ACCOUNT=admin \
-           -e GRAFANA_ADMIN_PASSWORD=adminpassword \
-           -e VERIFY_SSL=False \
-           -v /tmp/backup/:/opt/grafana-backup-tool/_OUTPUT_ \
-           DuraCHYo/docker-grafana-backup-tool
-```
-
-***S3 Example:*** Set S3 configurations in `-e` or `grafanaSettings.json`([example](https://github.com/DuraCHYo/grafana-backup-tool/blob/master/examples/grafanaSettings.example.json))
-```
-           -e AWS_S3_BUCKET_NAME="my-backups-bucket" \
-           -e AWS_S3_BUCKET_KEY="grafana-backup-folder" \
-           -e AWS_DEFAULT_REGION="us-east-1" \
-           -e AWS_ACCESS_KEY_ID="secret" \
-           -e AWS_SECRET_ACCESS_KEY="secret" \
-```
-
-***Azure Example:*** Set Azure configurations in `-e` or `grafanaSettings.json`([example](https://github.com/DuraCHYo/grafana-backup-tool/blob/master/examples/grafanaSettings.example.json))
-```
-		   -e AZURE_STORAGE_CONTAINER_NAME="azure-storage-container-name" \
-		   -e AZURE_STORAGE_CONNECTION_STRING="azure-storage-connection-string"
-```
-
-***GCS Example:*** Set GCS configurations in `-e` or `grafanaSettings.json`([example](https://github.com/DuraCHYo/grafana-backup-tool/blob/master/examples/grafanaSettings.example.json))
-```
-		   -e GCS_BUCKET_NAME="backups-bucket-name" \
-		   -e GCS_BUCKET_PATH="grafana-backup-folder" \
-		   -e GCLOUD_PROJECT="gcp-project-name" \
-		   -e GOOGLE_APPLICATION_CREDENTIALS="credential-file-path"
-```
-
-
-### Restore
-
-```
-docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
-           -e GRAFANA_TOKEN={YOUR_GRAFANA_TOKEN} \
-           -e GRAFANA_URL={YOUR_GRAFANA_URL} \
-           -e GRAFANA_ADMIN_ACCOUNT={YOUR_GRAFANA_ADMIN_ACCOUNT} \
-           -e GRAFANA_ADMIN_PASSWORD={YOUR_GRAFANA_ADMIN_PASSWORD} \
-           -e VERIFY_SSL={True/False} \
-           -e RESTORE="true" \
-           -e ARCHIVE_FILE={THE_ARCHIVED_FILE_NAME} \
-           -v {YOUR_BACKUP_FOLDER_ON_THE_HOST}:/opt/grafana-backup-tool/_OUTPUT_  \
-           DuraCHYo/docker-grafana-backup-tool
-```
-
-***Example:***
-
-```
-docker run --user $(id -u):$(id -g) --rm --name grafana-backup-tool \
-           -e GRAFANA_TOKEN="eyJrIjoiNGZqTDEyeXNaY0RsMXNhbkNTSnlKN2M3bE1VeHdqVTEiLCJuIjoiZ3JhZmFuYS1iYWNrdXAiLCJpZCI6MX0=" \
-           -e GRAFANA_URL=http://192.168.0.79:3000 \
-           -e GRAFANA_ADMIN_ACCOUNT=admin \
-           -e GRAFANA_ADMIN_PASSWORD=adminpassword \
-           -e VERIFY_SSL=False \
-           -e RESTORE="true" \
-           -e ARCHIVE_FILE="202006280247.tar.gz" \
-           -v /tmp/backup/:/opt/grafana-backup-tool/_OUTPUT_ \
-           DuraCHYo/docker-grafana-backup-tool
-```
-
-### Contribution
-Docker-compose is available in tests dir. He uses grafana and minio to test puts backup in S3.
-Also, for simple debug you can run TUI script
+### Azure Blob Storage
 ```bash
-cd ./tests && PYTHONPATH=.. python3 grafana_backup_tui.py
+-e AZURE_STORAGE_CONTAINER_NAME="my-container" \
+-e AZURE_STORAGE_CONNECTION_STRING="my-connection-string"
 ```
 
-### Building
-You can build the docker image simply by executing `make` in the root of this repo. The image will get tagged as `DuraCHYo:grafana-backup-tool`
+### Google Cloud Storage (GCS)
+```bash
+-e GCS_BUCKET_NAME="my-bucket" \
+-e GCLOUD_PROJECT="my-project" \
+-e GOOGLE_APPLICATION_CREDENTIALS="/path/to/key.json"
+```
+### [AIStor](https://github.com/minio/minio) ex. MinIO
+```bash
+-e 
+```
 
-### Monitoring
-InfluxDB support has been added and Prometheus push gateway support will be added in the future.
+---
 
-In order to monitor successful backups with InfluxDB simply configure `grafana-backup` InfluxDB settings using this [example](examples) configuration.
-Or if you prefer to use environment variables you can instead set `INFLUXDB_HOST`, `INFLUXDB_PORT`, `INFLUXDB_MEASUREMENT`, `INFLUXDB_USERNAME` and `INFLUXDB_PASSWORD`.
+## 💡 Future Ideas
+1. **GitOps Mode**: Save dashboards as raw JSON (no archive) for easy Git tracking.
+2. **Multi-Org Support**: Iterate through all organizations automatically.
+3. **Selective Restore**: Restore only specific folders or dashboard UID patterns.
+4. **Modern CLI**: Migration to `Typer` for better command-line experience.
 
-Once configured `grafana-backup` will automatically enter a `1` in your defined timeseries measurement upon each successful backup.
+---
+
+## 🤝 Contribution
+1. Clone the repo.
+2. Run test stack: `cd tests && docker-compose up -d`.
+3. Run TUI debug: `PYTHONPATH=.. python3 tests/grafana_backup_tui.py`.
+
+---
+*Maintained with ❤️ by DuraCHYo. Original tool by ysde.*
