@@ -1,4 +1,4 @@
-from grafana_backup.constants import (PKG_NAME, PKG_VERSION)
+from grafana_backup.constants import PKG_NAME, PKG_VERSION
 from grafana_backup.pause_alerts import main as pause_alerts
 from grafana_backup.unpause_alerts import main as unpause_alerts
 from grafana_backup.make_users_viewers import main as make_users_viewers
@@ -25,25 +25,26 @@ Options:
     --config=<filename>                     Override default configuration path
     """.format(PKG_NAME, PKG_VERSION)
 
-    args = docopt(docstring, help=False,
-                  version='{0} {1}'.format(PKG_NAME, PKG_VERSION))
+    args = docopt(
+        docstring, help=False, version="{0} {1}".format(PKG_NAME, PKG_VERSION)
+    )
 
     combined_args = precommand_args.copy()
     combined_args.update(args)
 
-    if args.get('pause-alerts', None):
+    if args.get("pause-alerts", None):
         pause_alerts(combined_args, settings)
         sys.exit()
-    elif args.get('unpause-alerts', None):
+    elif args.get("unpause-alerts", None):
         unpause_alerts(combined_args, settings)
         sys.exit()
-    elif args.get('make-users-viewers', None):
+    elif args.get("make-users-viewers", None):
         make_users_viewers(args, settings)
         sys.exit()
-    elif args.get('restore-users', None):
+    elif args.get("restore-users", None):
         restore_user_permissions(args, settings)
         sys.exit()
-    elif args.get('--help', None):
+    elif args.get("--help", None):
         print(docstring)
         sys.exit()
     else:

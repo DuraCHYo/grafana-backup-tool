@@ -30,6 +30,10 @@ This is a **maintained fork** of [ysde/grafana-backup-tool](https://github.com/y
     - [Azure Blob Storage](#azure-blob-storage)
     - [Google Cloud Storage (GCS)](#google-cloud-storage-gcs)
     - [AIStor ex. MinIO](#aistor-ex-minio)
+    - [Garage](#garage)
+  - [🛠 Automation with Makefile](#-automation-with-makefile)
+    - [Available Commands](#available-commands)
+    - [Usage Examples](#usage-examples)
   - [💡 Future Ideas](#-future-ideas)
   - [🤝 Contribution](#-contribution)
 
@@ -48,7 +52,7 @@ grafana-backup save
 ---
 
 ## ✨ Key Improvements
-* ✅ **Grafana 11.x Ready**: Fixed authentication and API schema changes.
+* ✅ **Grafana 12.x Ready**: Fixed authentication and API schema changes.
 * ✅ **Library Panels Fix**: Proper restoration of library elements (tested v8.4.3 to v11.x).
 * ✅ **Unified Alerting**: Support for Alert Rules, Contact Points, and Policies (v9.4.0+).
 * ✅ **Security Updates**: Modernized base Docker images and dependencies.
@@ -81,16 +85,16 @@ You can configure the tool via `grafanaSettings.json` or **Environment Variables
 | `VERIFY_SSL`             | Set to `False` for self-signed certs     | No (Default: `True`) |
 
 > [!TIP]
-> We highly recommend using a **Service Account Token** with Admin permissions.
+> I highly recommend using a **Service Account Token** with Admin permissions.
 
 ---
 
 ## 🛠 Installation
 ### Using Virtual Environment
 ```bash
-virtualenv -p $(which python3) venv
-source venv/bin/activate
-pip install .
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ---
@@ -102,12 +106,12 @@ docker run --rm --name grafana-backup-tool \
   -e GRAFANA_TOKEN="your_token" \
   -e GRAFANA_URL="http://grafana:3000" \
   -v /tmp/backup:/opt/grafana-backup-tool/_OUTPUT_ \
-  dealfa/grafana-backup-tool:v1.5.0 grafana-backup save
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.0 grafana-backup save
 ```
 
 ### Kubernetes
 - **Helm Chart**: Available in the `/charts` directory.
-- **CronJob**: See [examples/cronjob.yaml](examples) for scheduled backups.
+- **CronJob**: See [values.yaml](charts/grafana-backup-tool/values.yaml) for scheduled backups.
 
 ---
 
@@ -134,10 +138,59 @@ The tool supports versioned archives automatically uploaded to any S3-compatible
 -e GCLOUD_PROJECT="my-project" \
 -e GOOGLE_APPLICATION_CREDENTIALS="/path/to/key.json"
 ```
-### [AIStor](https://github.com/minio/minio) ex. MinIO
+
+### [AIStor](https://www.min.io/pricing) ex. MinIO
+
 ```bash
--e 
+-e AWS_S3_BUCKET_NAME="grafana-backups" \
+-e AWS_ENDPOINT_URL="http://minio:9000" \
+-e AWS_ACCESS_KEY_ID="minioadmin" \
+-e AWS_SECRET_ACCESS_KEY="minioadmin" \
+-e AWS_DEFAULT_REGION="us-east-1"
 ```
+
+### [Garage](https://garagehq.deuxfleurs.fr/)
+```bash
+Works as such as AWS and AIStor. Fully compatible. Use AWS connector.
+```
+
+---
+
+## 🛠 Automation with Makefile
+A `Makefile` is included in the repository to simplify local development and automate routine tasks via Docker.
+
+### Available Commands
+| Command                    | Description                                                             |
+| :------------------------- | :---------------------------------------------------------------------- |
+| `make build`               | Builds the local Docker image with the tag defined in the Makefile.     |
+| `make backup`              | Runs a backup and saves the archive to the `./backups` folder.          |
+| `make restore FILE=<name>` | Restores Grafana state from a specific archive in `./backups`.          |
+| `make shell`               | Starts an interactive shell session inside the container for debugging. |
+| `make test`                | Checks functionality by running the help command.                       |
+| `make logs`                | Runs a backup with `LOG_LEVEL=DEBUG` for troubleshooting.               |
+| `make update_version`      | Updates all versions in required files to new                           |
+
+### Usage Examples
+
+1.  **Build the image**:
+    ```bash
+    make build
+    ```
+
+2.  **Run a quick backup**:
+    You can override variables directly in the command line:
+    ```bash
+    make backup GRAFANA_TOKEN="your_token" GRAFANA_URL=https://grafana.example.com
+    ```
+
+3.  **Restore from a file**:
+    Ensure the file exists in your local `./backups` directory:
+    ```bash
+    make restore FILE=2026-03-28_22-00.tar.gz
+    ```
+
+> [!TIP]
+> You can edit the `GRAFANA_URL` and `GRAFANA_TOKEN` variables directly inside the `Makefile` to avoid typing them during every local test.
 
 ---
 

@@ -12,9 +12,9 @@ def get_setting(config, section, key, env_name, default, transform=None):
     """
     val = os.getenv(env_name, config.get(section, {}).get(key, default))
 
-    if transform == bool or (isinstance(val, str) and val.lower() in ["true", "false"]):
+    if transform is bool or (isinstance(val, str) and val.lower() in ["true", "false"]):
         return str(val).lower() == "true"
-    if transform == int:
+    if transform is int:
         try:
             return int(val)
         except (ValueError, TypeError):
@@ -42,7 +42,7 @@ def main(config_path):
         ("general", "verify_ssl", "VERIFY_SSL", False, bool),
         ("general", "client_cert", "CLIENT_CERT", None, None),
         ("general", "backup_dir", "BACKUP_DIR", "_OUTPUT_", None),
-        ("general", "backup_file_format", "BACKUP_FILE_FORMAT", "%Y%m%d%H%M", None),
+        ("general", "backup_file_format", "BACKUP_FILE_FORMAT", "%Y-%m-%d-%H-%M", None),
         (
             "general",
             "uid_dashboard_slug_suffix",

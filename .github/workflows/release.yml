@@ -52,18 +52,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Update Kustomize image tag
-        run: |
-          NEW_TAG="${{ steps.get_version.outputs.VERSION }}"
-          sed -i "s|newTag: .*|newTag: \"$NEW_TAG\"|" "manifests/kustomization.yaml"
-
-      - name: Commit and push changes
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add manifests/kustomization.yaml
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: release ${{ steps.get_version.outputs.VERSION }} [skip ci]" && git push origin master)
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

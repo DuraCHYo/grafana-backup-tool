@@ -20,3 +20,8 @@ garage bucket allow \
   --owner \
   backup-tool-bucket \
   --key backup-tool-key
+brew install minio-mc
+mc alias set garage http://localhost:3900 GK8fd0d61da5e7b1659a24a171 d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da --api S3v4
+mc ls garage/backup-tool-bucket
+
+mc rm -r --force garage/backup-tool-bucket/

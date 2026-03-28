@@ -19,8 +19,9 @@ spec:
           restartPolicy: {{ .Values.cronjob.restartPolicy }}
           containers:
             - name: grafana-backup-tool
-              image: "{{ .Values.cronjob.image.repository }}:{{ .Values.cronjob.image.tag }}"
-              imagePullPolicy: {{ .Values.cronjob.image.pullPolicy }}
+              {{- $image := .Values.cronjob.image -}}
+              image: "{{ $image.repository | default "ghcr.io/durachyo/grafana-backup-tool" }}:{{ $image.tag | default "v1.6.0" }}"
+              imagePullPolicy: "IfNotPresent"
               envFrom:
                 - configMapRef:
                     name: grafana-backup-tool

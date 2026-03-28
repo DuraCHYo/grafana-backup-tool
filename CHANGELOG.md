@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v.2.0.0] - ?-?-?
+- Plan: Rewrite all code
+
+## [1.6.0] - 2026-03-29
+
+### Added
+- Dynamic discovery for Grafana components, replacing 20+ hardcoded imports with a flexible registry system.
+- Support for both hyphenated and underscored names (e.g., `library-elements`).
+- Centralized `BaseStorageProvider` for S3, Azure, and GCS.
+- Dedicated `S3Provider` (supporting AWS, Minio, Garage, etc.) and consolidated logic for Azure & GCS with improved `BlobServiceClient` integration.
+
+### Changed
+- Refactored file structure: removed redundant timestamp subfolders; components are now stored directly (e.g., `dashboards/file.json`).
+- Improved reliability by separating API communication, local archiving, and cloud synchronization.
+- Reordered `shutil.rmtree` and directory cleanup to execute only after successful archiving to prevent data loss.
+- Integrated `os.path` and `glob` for robust cross-platform handling.
+- Formatted all files using Pylance and Ruff linter to comply with PEP8.
+- Update Helm Chart
+- 
+### Fixed
+- Resolved string/bytes credential encoding errors in S3 storage.
+- Enhanced exception handling in Azure and GCS providers.
+- Fixed type errors, typos, and various small bugs across all files.
+
+### Removed
+- Legacy Python 2 compatibility layers.
+- 20+ hardcoded imports (replaced by dynamic discovery).
+- Fragmented individual storage scripts (consolidated into providers).
+- Non-actual tools
+  
+# [v1.5.0] - 2026-02-22
+### Changed
+- fix: re-add parallel API calls with rate-limited ThreadPoolExecutor (#5) (by Ashish kumar choubey @ashishkr96)
+
 # [v1.4.7] - 2026-01-23
 
 ### Changed
