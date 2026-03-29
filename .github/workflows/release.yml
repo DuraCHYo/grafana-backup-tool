@@ -23,17 +23,12 @@ jobs:
         id: get_version
         run: |
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            echo "VERSION=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            RAW_VER="${{ github.ref_name }}"
           else
-            echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
+            RAW_VER=$(cat VERSION)
           fi
-
-      - name: Log in to Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          CLEAN_VER=$(echo $RAW_VER | sed 's/^v//')
+          echo "VERSION=$CLEAN_VER" >> $GITHUB_OUTPUT
 
       - name: Extract metadata
         id: meta
@@ -41,7 +36,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=${{ steps.get_version.outputs.VERSION }}
+            type=raw,value=v${{ steps.get_version.outputs.VERSION }}
             type=raw,value=latest
 
       - name: Build and push Docker image
@@ -55,6 +50,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          name: Release ${{ steps.get_version.outputs.VERSION }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: v${{ steps.get_version.outputs.VERSION }}
           generate_release_notes: true
