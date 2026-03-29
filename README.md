@@ -22,9 +22,12 @@ This is a **maintained fork** of [ysde/grafana-backup-tool](https://github.com/y
     - [Core Variables](#core-variables)
   - [🛠 Installation](#-installation)
     - [Using Virtual Environment](#using-virtual-environment)
-  - [🐳 Docker \& Kubernetes](#-docker--kubernetes)
-    - [Docker](#docker)
-    - [Kubernetes](#kubernetes)
+    - [🐳 Docker examples](#-docker-examples)
+      - [Save to hostdir](#save-to-hostdir)
+      - [Save to S3](#save-to-s3)
+      - [Restore from hostdir](#restore-from-hostdir)
+      - [Restore from S3](#restore-from-s3)
+  - [🌌 Kubernetes](#-kubernetes)
   - [☁️ Cloud Storage](#️-cloud-storage)
     - [Amazon S3](#amazon-s3)
     - [Azure Blob Storage](#azure-blob-storage)
@@ -99,17 +102,49 @@ pip install -r requirements.txt
 
 ---
 
-## 🐳 Docker & Kubernetes
-### Docker
+
+### 🐳 Docker examples
+#### Save to hostdir
 ```bash
-docker run --rm --name grafana-backup-tool \
+docker run --network=host --rm --name grafana-backup-tool \
   -e GRAFANA_TOKEN="your_token" \
   -e GRAFANA_URL="http://grafana:3000" \
   -v /tmp/backup:/opt/grafana-backup-tool/_OUTPUT_ \
-  ghcr.io/durachyo/grafana-backup-tool:v1.6.0 grafana-backup save
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.0 save
+```
+#### Save to S3
+```bash
+docker run --network=host --rm --name grafana-backup-tool \
+  -e GRAFANA_TOKEN=glsa_B1pZjuj87lcnc7TSK6vBPSrhTFPLe70o_0d8785f9 \
+  -e AWS_S3_BUCKET_NAME=backup-tool-bucket \
+  -e AWS_ACCESS_KEY_ID=GK8fd0d61da5e7b1659a24a171 \
+  -e AWS_SECRET_ACCESS_KEY=d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da \
+  -e AWS_ENDPOINT_URL=http://localhost:3900 \
+  -v ./OUTPUT/:/opt/grafana-backup-tool/_OUTPUT_ \
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.0 save
+```
+#### Restore from hostdir
+```bash
+docker run --network=host --rm --name grafana-backup-tool \
+  -e GRAFANA_TOKEN="your_token" \
+  -e GRAFANA_URL="http://grafana:3000" \
+  -v /tmp/backup:/opt/grafana-backup-tool/_OUTPUT_ \
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.0 restore _OUTPUT_/2026-03-29-00-18.tar.gz
+```
+#### Restore from S3
+```bash
+docker run --network=host --rm --name grafana-backup-tool \
+  -e GRAFANA_TOKEN="glsa_B1pZjuj87lcnc7TSK6vBPSrhTFPLe70o_0d8785f9" \
+  -e GRAFANA_URL="http://localhost:3000" \
+  -e AWS_S3_BUCKET_NAME=backup-tool-bucket \
+  -e AWS_ACCESS_KEY_ID=GK8fd0d61da5e7b1659a24a171 \
+  -e AWS_SECRET_ACCESS_KEY=d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da \
+  -e AWS_ENDPOINT_URL=http://localhost:3900 \
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.0 restore 2026-03-29-00-18.tar.gz
 ```
 
-### Kubernetes
+## 🌌 Kubernetes
+
 - **Helm Chart**: Available in the `/charts` directory.
 - **CronJob**: See [values.yaml](charts/grafana-backup-tool/values.yaml) for scheduled backups.
 

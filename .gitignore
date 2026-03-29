@@ -1,4 +1,5 @@
-_OUTPUT_
+_OUTPUT_/
+OUTPUT/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

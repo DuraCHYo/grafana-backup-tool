@@ -8,27 +8,34 @@ from grafana_backup.commons import load_config
 def get_setting(config, section, key, env_name, default, transform=None):
     """
     Priority: Environment Variable > Config File > Default Value.
-    Automatic bool to int and int to bool
+    Safe for None config.
     """
-    val = os.getenv(env_name, config.get(section, {}).get(key, default))
+    file_val = config.get(section, {}).get(key, default) if config is not None else default
+    val = os.getenv(env_name, file_val)
 
     if transform is bool or (isinstance(val, str) and val.lower() in ["true", "false"]):
         return str(val).lower() == "true"
+    
     if transform is int:
         try:
             return int(val)
         except (ValueError, TypeError):
             return default
+            
     return val
 
 
-def main(config_path):
-    config = load_config(config_path)
+def main(config_path=None):
+    if config_path and os.path.isfile(config_path):
+        config = load_config(config_path)
+    else:
+        config = {}
+
     config_dict = {}
 
     settings_map = [
         # Grafana Core
-        ("grafana", "url", "GRAFANA_URL", "", None),
+        ("grafana", "url", "GRAFANA_URL", "http://localhost:3000", None),
         ("grafana", "token", "GRAFANA_TOKEN", "", None),
         ("grafana", "search_api_limit", "SEARCH_API_LIMIT", 5000, int),
         ("grafana", "default_user_password", "DEFAULT_USER_PASSWORD", "00000000", None),
@@ -43,13 +50,7 @@ def main(config_path):
         ("general", "client_cert", "CLIENT_CERT", None, None),
         ("general", "backup_dir", "BACKUP_DIR", "_OUTPUT_", None),
         ("general", "backup_file_format", "BACKUP_FILE_FORMAT", "%Y-%m-%d-%H-%M", None),
-        (
-            "general",
-            "uid_dashboard_slug_suffix",
-            "UID_DASHBOARD_SLUG_SUFFIX",
-            False,
-            bool,
-        ),
+        ("general", "uid_dashboard_slug_suffix", "UID_DASHBOARD_SLUG_SUFFIX", False, bool),
         ("general", "pretty_print", "PRETTY_PRINT", False, bool),
         ("general", "backup_workers", "BACKUP_WORKERS", 3, int),
         # AWS S3
@@ -79,7 +80,7 @@ def main(config_path):
 
     gcp_creds = os.getenv(
         "GOOGLE_APPLICATION_CREDENTIALS",
-        config.get("gcp", {}).get("google_application_credentials", ""),
+        config.get("gcp", {}).get("google_application_credentials", "") if config else ""
     )
     if gcp_creds:
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_creds
@@ -87,9 +88,10 @@ def main(config_path):
     extra_headers_raw = os.getenv("GRAFANA_HEADERS", "")
     extra_headers = {}
     if extra_headers_raw:
-        extra_headers = dict(
-            h.split(":") for h in extra_headers_raw.split(",") if ":" in h
-        )
+        try:
+            extra_headers = dict(h.split(":", 1) for h in extra_headers_raw.split(",") if ":" in h)
+        except Exception:
+            print("Error parsing GRAFANA_HEADERS")
 
     token = config_dict.get("GRAFANA_TOKEN")
     http_get = {"Authorization": f"Bearer {token}"} if token else {}
@@ -100,8 +102,8 @@ def main(config_path):
     http_get.update(extra_headers)
     http_post.update(extra_headers)
 
-    admin_user = config_dict["GRAFANA_ADMIN_ACCOUNT"]
-    admin_pass = config_dict["GRAFANA_ADMIN_PASSWORD"]
+    admin_user = config_dict.get("GRAFANA_ADMIN_ACCOUNT")
+    admin_pass = config_dict.get("GRAFANA_ADMIN_PASSWORD")
     basic_auth = os.getenv("GRAFANA_BASIC_AUTH")
 
     if not basic_auth and admin_user and admin_pass:
@@ -114,16 +116,14 @@ def main(config_path):
         get_basic = {**http_get, "Authorization": f"Basic {basic_auth}"}
         post_basic = {**http_post, "Authorization": f"Basic {basic_auth}"}
 
-    config_dict.update(
-        {
-            "GRAFANA_BASIC_AUTH": basic_auth,
-            "EXTRA_HEADERS": extra_headers,
-            "HTTP_GET_HEADERS": http_get,
-            "HTTP_POST_HEADERS": http_post,
-            "HTTP_GET_HEADERS_BASIC_AUTH": get_basic,
-            "HTTP_POST_HEADERS_BASIC_AUTH": post_basic,
-            "TIMESTAMP": datetime.today().strftime(config_dict["BACKUP_FILE_FORMAT"]),
-        }
-    )
+    config_dict.update({
+        "GRAFANA_BASIC_AUTH": basic_auth,
+        "EXTRA_HEADERS": extra_headers,
+        "HTTP_GET_HEADERS": http_get,
+        "HTTP_POST_HEADERS": http_post,
+        "HTTP_GET_HEADERS_BASIC_AUTH": get_basic,
+        "HTTP_POST_HEADERS_BASIC_AUTH": post_basic,
+        "TIMESTAMP": datetime.today().strftime(config_dict.get("BACKUP_FILE_FORMAT", "%Y-%m-%d-%H-%M")),
+    })
 
     return config_dict
