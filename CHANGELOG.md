@@ -22,12 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated `os.path` and `glob` for robust cross-platform handling.
 - Formatted all files using Pylance and Ruff linter to comply with PEP8.
 - Update Helm Chart
-- 
+- Rewrite Dockerfile. Change exec strategy to single binary commands.
+- Fix run without defined config file
+
 ### Fixed
 - Resolved string/bytes credential encoding errors in S3 storage.
 - Enhanced exception handling in Azure and GCS providers.
 - Fixed type errors, typos, and various small bugs across all files.
-
+- Fix run without defined config file
+  
 ### Removed
 - Legacy Python 2 compatibility layers.
 - 20+ hardcoded imports (replaced by dynamic discovery).
