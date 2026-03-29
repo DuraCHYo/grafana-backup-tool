@@ -29,6 +29,13 @@ jobs:
           fi
           CLEAN_VER=$(echo $RAW_VER | sed 's/^v//')
           echo "VERSION=$CLEAN_VER" >> $GITHUB_OUTPUT
+      
+      - name: Log in to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
