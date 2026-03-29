@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="grafana-backup-tool",
-    version="1.6.0",
+    version="v1.6.0",
     packages=find_packages(),
     install_requires=[
         "boto3",
