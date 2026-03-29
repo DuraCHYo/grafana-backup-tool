@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
-## [1.6.0] - 2026-03-29
+# [1.6.0] - 2026-03-29
 
 ### Added
 - Dynamic discovery for Grafana components, replacing 20+ hardcoded imports with a flexible registry system.
