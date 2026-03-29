@@ -43,3 +43,4 @@ update_version:
 	sed -i '' 's/$(OLD_VERSION)/$(OLD_VERSION)/g' README.md
 	sed -i '' 's/$(OLD_VERSION)/$(OLD_VERSION)/g' Makefile
 	sed -i '' 's/$(OLD_VERSION)/$(OLD_VERSION)/g' grafana_backup/constants.py
+	sed -i '' 's/$(OLD_VERSION)/$(OLD_VERSION)/g' setup.py
