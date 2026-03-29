@@ -1,20 +1,32 @@
 services:
   grafana:
-    image: grafana/grafana:12.3.0
+    image: grafana/grafana
     container_name: grafana
     restart: unless-stopped
     ports:
       - 3000:3000
-    networks:
-      - backup-tool
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana-path:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=1
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+  garage:
+    image: dxflrs/garage:v2.2.0
+    container_name: garaged
+    restart: unless-stopped
+    ports:
+      - "3900:3900"
+      - "3901:3901"
+      - "3902:3902"
+      - "3903:3903"
+    volumes:
+      - garage-path:/var/lib/garage/meta
+      - garage-path:/var/lib/garage/data
+      - ./garage.toml:/etc/garage.toml
 
 networks:
   backup-tool:
     external: true
 volumes:
-  grafana-data: {}
+  grafana-path: {}
+  garage-path: {}

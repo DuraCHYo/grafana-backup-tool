@@ -1,23 +1,28 @@
 from setuptools import setup, find_packages
-# Global variables
-requires = [
-    'requests',
-    'docopt',
-    'boto3',
-    'python-dotenv',
-    'azure-storage-blob',
-    'google-cloud-storage',
-    'influxdb',
-    'packaging'
-]
+
 setup(
     name="grafana-backup-tool",
-    version="1.4.5",
+    version="1.6.0",
     packages=find_packages(),
-    install_requires=requires,
+    install_requires=[
+        "boto3",
+        "requests",
+        "azure-storage-blob",
+        "google-cloud-storage",
+        'python-dotenv',
+        'setuptools',
+        'docopt',
+        'influxdb',
+        'botocore',
+        'packaging',
+        'azure-core',
+        'azure-storage-blob',
+        'google-api-core'
+    ],
     entry_points={
-        'console_scripts': [
-            'grafana-backup=grafana_backup.cli:main',
+        "console_scripts": [
+            "grafana-backup=grafana_backup.cli:main",
         ],
     },
+    python_requires=">=3.10",
 )

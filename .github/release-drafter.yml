@@ -1,0 +1,15 @@
+template: '$CHANGES'
+
+autolabeler:
+  - label: 'enhancement'
+    title:
+      - '/^feat:/i'
+      - '/^feature:/i'
+      - '/^enhancement:/i'
+  - label: 'bug'
+    title:
+      - '/^fix:/i'
+      - '/^bug:/i'
+  - label: 'ignore-for-release'
+    title:
+      - '/^chore:/i'
