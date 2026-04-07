@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.1] - 2026-04-07
+
+### Changed
+- Change create actions
+- Start refactor of legacy s3download function work properly
+
 # [v1.6.0] - 2026-03-29
 
 ### Added
