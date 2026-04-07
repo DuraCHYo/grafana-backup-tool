@@ -10,7 +10,6 @@ COPY . .
 RUN pip install --no-cache-dir .
 RUN mkdir -p _OUTPUT_
 
-# Окружение
 ENV RESTORE=false
 ENV ARCHIVE_FILE=""
 ENV GRAFANA_URL="http://localhost:3000"
