@@ -20,7 +20,7 @@ spec:
           containers:
             - name: grafana-backup-tool
               {{- $image := .Values.cronjob.image -}}
-              image: "{{ $image.repository | default "ghcr.io/durachyo/grafana-backup-tool" }}:{{ $image.tag | default "v1.6.0" }}"
+              image: "{{ $image.repository | default "ghcr.io/durachyo/grafana-backup-tool" }}:{{ $image.tag | default "v1.6.1" }}"
               command: ['save']
               imagePullPolicy: "IfNotPresent"
               envFrom:
