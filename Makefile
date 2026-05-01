@@ -5,7 +5,7 @@ IMAGE_NAME := grafana-backup-tool
 IMAGE_TAG := v1.6.1
 GRAFANA_URL := http://localhost:3000
 GRAFANA_TOKEN := SA_TOKEN
-NEW_VERSION := X.Y.Z
+NEW_VERSION := v1.6.2
 
 build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
