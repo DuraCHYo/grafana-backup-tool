@@ -238,9 +238,28 @@ A `Makefile` is included in the repository to simplify local development and aut
 ---
 
 ## 🤝 Contribution
-1. Clone the repo.
-2. Run test stack: `cd tests && docker-compose up -d`.
-3. Run TUI debug: `PYTHONPATH=.. python3 tests/grafana_backup_tui.py`.
+
+1. **Clone this repo:**
+   ```bash
+   git clone https://github.com/DuraCHYo/grafana-backup-tool.git
+   cd grafana-backup-tool
+   ```
+2. **Run test docker-compose stack:**
+   ```bash
+   docker compose -f ./tests/docker-compose.yaml up -d
+   ```
+3. **Set up the environment:**
+   We use `uv` for dependency management. If you don't have it, [install it here](https://docs.astral.sh/uv/getting-started/installation/).
+   
+   Create a virtual environment and install dependencies:
+   ```bash
+   uv sync
+   ```
+4. **Run the tool:**
+   You can run the tool using `uv run`:
+   ```bash
+   uv run grafana-backup --help
+   ```
 
 ---
 *Maintained with ❤️ by DuraCHYo. Original tool by ysde.*
