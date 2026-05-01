@@ -1,5 +1,5 @@
-python3 -m grafana_backup.cli restore --config grafana_backup/conf/grafanaSettings.json _OUTPUT_/202603240710.tar.gz
-python3 -m grafana_backup.cli save --config grafana_backup/conf/grafanaSettings.json
+uv run grafana-backup restore --config grafana_backup/conf/grafanaSettings.json _OUTPUT_/202603240710.tar.gz
+uv run grafana-backup save --config grafana_backup/conf/grafanaSettings.json
 
 docker exec -ti <container name> /garage status
 garage layout assign -z dc1 -c 1G <node_id>

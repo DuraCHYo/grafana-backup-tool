@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.3] - 2026-05-01
+
+### Changed
+- Move to uv for package management for project
+
+# [v1.6.2] - 2026-05-01
+
+### Fixed
+- Resolved issue with Grafana API compatibility on version lower then 10
+
 # [v1.6.1] - 2026-04-07
 
 ### Changed
