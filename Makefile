@@ -2,10 +2,10 @@
 .PHONY: build shell backup restore test update_version
 
 IMAGE_NAME := grafana-backup-tool
-IMAGE_TAG := v1.6.1
+IMAGE_TAG := v1.6.2
 GRAFANA_URL := http://localhost:3000
 GRAFANA_TOKEN := SA_TOKEN
-NEW_VERSION := v1.6.2
+NEW_VERSION := v1.6.3
 
 build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
@@ -41,4 +41,4 @@ update_version:
 	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' charts/grafana-backup-tool/templates/cronjob.yaml
 	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' README.md
 	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' grafana_backup/constants.py
-	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' setup.py
+	sed -i '' "s/$(IMAGE_TAG:v%=%)/$(NEW_VERSION:v%=%)/g" pyproject.toml

@@ -110,7 +110,7 @@ docker run --network=host --rm --name grafana-backup-tool \
   -e GRAFANA_TOKEN="your_token" \
   -e GRAFANA_URL="http://grafana:3000" \
   -v /tmp/backup:/opt/grafana-backup-tool/_OUTPUT_ \
-  ghcr.io/durachyo/grafana-backup-tool:v1.6.2 save
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.3 save
 ```
 #### Save to S3
 ```bash
@@ -121,7 +121,7 @@ docker run --network=host --rm --name grafana-backup-tool \
   -e AWS_SECRET_ACCESS_KEY=d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da \
   -e AWS_ENDPOINT_URL=http://localhost:3900 \
   -v ./OUTPUT/:/opt/grafana-backup-tool/_OUTPUT_ \
-  ghcr.io/durachyo/grafana-backup-tool:v1.6.2 save
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.3 save
 ```
 #### Restore from hostdir
 ```bash
@@ -129,7 +129,7 @@ docker run --network=host --rm --name grafana-backup-tool \
   -e GRAFANA_TOKEN="your_token" \
   -e GRAFANA_URL="http://grafana:3000" \
   -v /tmp/backup:/opt/grafana-backup-tool/_OUTPUT_ \
-  ghcr.io/durachyo/grafana-backup-tool:v1.6.2 restore _OUTPUT_/2026-03-29-00-18.tar.gz
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.3 restore _OUTPUT_/2026-03-29-00-18.tar.gz
 ```
 #### Restore from S3
 ```bash
@@ -140,7 +140,7 @@ docker run --network=host --rm --name grafana-backup-tool \
   -e AWS_ACCESS_KEY_ID=GK8fd0d61da5e7b1659a24a171 \
   -e AWS_SECRET_ACCESS_KEY=d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da \
   -e AWS_ENDPOINT_URL=http://localhost:3900 \
-  ghcr.io/durachyo/grafana-backup-tool:v1.6.2  restore 2026-03-29-00-18.tar.gz
+  ghcr.io/durachyo/grafana-backup-tool:v1.6.3  restore 2026-03-29-00-18.tar.gz
 ```
 
 ## 🌌 Kubernetes

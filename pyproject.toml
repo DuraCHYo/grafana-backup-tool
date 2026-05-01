@@ -1,6 +1,6 @@
 [project]
 name = "grafana-backup-tool"
-version = "1.6.2"
+version = "1.6.3"
 description = "Backup tool for Grafana"
 readme = "README.md"
 requires-python = ">=3.10"
