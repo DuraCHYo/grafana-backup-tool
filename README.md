@@ -48,8 +48,9 @@ If you just want to run a quick backup to a local folder:
 ```bash
 export GRAFANA_URL=http://your-grafana:3000
 export GRAFANA_TOKEN=your_admin_token
-pip install .
-grafana-backup save
+mkdir _OUTPUT_
+uv sync
+uv run grafana-backup save
 ```
 
 ---
@@ -93,11 +94,9 @@ You can configure the tool via `grafanaSettings.json` or **Environment Variables
 ---
 
 ## 🛠 Installation
-### Using Virtual Environment
+### Using UV
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 ```
 
 ---
@@ -116,6 +115,7 @@ docker run --network=host --rm --name grafana-backup-tool \
 ```bash
 docker run --network=host --rm --name grafana-backup-tool \
   -e GRAFANA_TOKEN=glsa_B1pZjuj87lcnc7TSK6vBPSrhTFPLe70o_0d8785f9 \
+  -e GRAFANA_URL="http://grafana:3000" \
   -e AWS_S3_BUCKET_NAME=backup-tool-bucket \
   -e AWS_ACCESS_KEY_ID=GK8fd0d61da5e7b1659a24a171 \
   -e AWS_SECRET_ACCESS_KEY=d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da \
