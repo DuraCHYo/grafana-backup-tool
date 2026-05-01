@@ -1,7 +1,8 @@
 import os
+
+from grafana_backup.commons import print_horizontal_line, save_json
 from grafana_backup.dashboardApi import get_dashboard_versions, get_version
 from grafana_backup.save_dashboards import get_all_dashboards_in_grafana
-from grafana_backup.commons import print_horizontal_line, save_json
 
 
 def main(args, settings):
@@ -105,13 +106,21 @@ def get_versions_and_save(
                 debug,
             )
             if status == 200:
+                if isinstance(content, dict) and "versions" in content:
+                    versions_list = content["versions"]
+                elif isinstance(content, list):
+                    versions_list = content
+                else:
+                    versions_list = []
+
                 print(
                     "found {0} versions for dashboard {1}".format(
-                        len(content), board["title"]
+                        len(versions_list), board["title"]
                     )
                 )
+
                 get_individual_versions(
-                    content["versions"],
+                    versions_list,
                     board_folder_path,
                     log_file,
                     grafana_url,
