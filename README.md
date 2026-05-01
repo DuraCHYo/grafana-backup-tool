@@ -258,7 +258,7 @@ A `Makefile` is included in the repository to simplify local development and aut
 4. **Run the tool:**
    You can run the tool using `uv run`:
    ```bash
-   uv run grafana-backup --help
+   uv run grafana-backup help
    ```
 
 ---
