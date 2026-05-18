@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.4] - 2026-05-18
+
+### Changed
+- Fix using default config in container with AWS upload
+
 # [v1.6.3] - 2026-05-01
 
 ### Changed

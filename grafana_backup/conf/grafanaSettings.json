@@ -12,16 +12,10 @@
   },
   "grafana": {
     "url": "http://localhost:3000",
-    "token": "glsa_B1pZjuj87lcnc7TSK6vBPSrhTFPLe70o_0d8785f9",
+    "token": "{YOUR_GRAFANA_TOKEN}",
     "search_api_limit": 5000,
     "default_user_password": "00000000",
     "admin_account": "admin",
-    "admin_password": "admin123"
-  },
-  "aws": {
-    "s3_bucket_name": "backup-tool-bucket",
-    "access_key_id": "GK8fd0d61da5e7b1659a24a171",
-    "secret_access_key": "d084c2836e8e38bc0cf8ea9db915d15c0b8dad6ddd40219bdb733953f4b452da",
-    "endpoint_url": "http://localhost:3900"
+    "admin_password": "admin"
   }
 }
