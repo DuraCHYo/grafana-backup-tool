@@ -1,8 +1,9 @@
-from grafana_backup.components.registry import load_component_functions
-from grafana_backup.archive import main as archive
-from grafana_backup.providers import get_provider
-from grafana_backup.api_checks import main as api_checks
 import sys
+
+from grafana_backup.api_checks import main as api_checks
+from grafana_backup.archive import main as archive
+from grafana_backup.components.registry import load_component_functions
+from grafana_backup.providers import get_provider
 
 
 def main(args, settings):
@@ -13,18 +14,17 @@ def main(args, settings):
         print(f"Grafana server status is not ok: {json_resp}")
         sys.exit(1)
 
-    settings.update(
-        {
-            "DASHBOARD_UID_SUPPORT": db_uid,
-            "DATASOURCE_UID_SUPPORT": ds_uid,
-            "PAGING_SUPPORT": paging,
-            "CONTACT_POINT_SUPPORT": cp_support,
-        }
-    )
+    settings.update({
+        "DASHBOARD_UID_SUPPORT": db_uid,
+        "DATASOURCE_UID_SUPPORT": ds_uid,
+        "PAGING_SUPPORT": paging,
+        "CONTACT_POINT_SUPPORT": cp_support,
+    })
 
     arg_components = args.get("--components", False)
     if arg_components:
         target_keys = arg_components.replace("_", "-").split(",")
+
     else:
         target_keys = list(all_backup_functions.keys())
 
@@ -32,6 +32,7 @@ def main(args, settings):
         if key in all_backup_functions:
             print(f"Saving {key}...")
             all_backup_functions[key](args, settings)
+
         else:
             print(f"Warning: Component {key} not found.")
 
