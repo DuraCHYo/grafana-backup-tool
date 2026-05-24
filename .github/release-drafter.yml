@@ -13,3 +13,6 @@ autolabeler:
   - label: 'ignore-for-release'
     title:
       - '/^chore:/i'
+      - '/^doc:/i'
+      - '/^skip:/i'
+

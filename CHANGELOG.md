@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.5] - 2026-05-24
+
+### Changed
+- feat: move to typer for cli (#20)
+- feat: move core methods and use GrafanaApiClient class in get request (#19)
+- feat: add GrafanaApiClient class for handling http requests (#18)
+- feat: implement dataclasses structure for keeping setting in-memory (#17)
+- feat: add class for error handling (#16)
+- feat: update delete and save project structure (#15)
+
 # [v1.6.4] - 2026-05-18
 
 ### Changed
