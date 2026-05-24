@@ -1,7 +1,7 @@
 import base64
-import json
 import os
 from datetime import datetime
+
 from grafana_backup.commons import load_config
 
 
@@ -10,18 +10,20 @@ def get_setting(config, section, key, env_name, default, transform=None):
     Priority: Environment Variable > Config File > Default Value.
     Safe for None config.
     """
-    file_val = config.get(section, {}).get(key, default) if config is not None else default
+    file_val = (
+        config.get(section, {}).get(key, default) if config is not None else default
+    )
     val = os.getenv(env_name, file_val)
 
     if transform is bool or (isinstance(val, str) and val.lower() in ["true", "false"]):
         return str(val).lower() == "true"
-    
+
     if transform is int:
         try:
             return int(val)
         except (ValueError, TypeError):
             return default
-            
+
     return val
 
 
@@ -50,7 +52,13 @@ def main(config_path=None):
         ("general", "client_cert", "CLIENT_CERT", None, None),
         ("general", "backup_dir", "BACKUP_DIR", "_OUTPUT_", None),
         ("general", "backup_file_format", "BACKUP_FILE_FORMAT", "%Y-%m-%d-%H-%M", None),
-        ("general", "uid_dashboard_slug_suffix", "UID_DASHBOARD_SLUG_SUFFIX", False, bool),
+        (
+            "general",
+            "uid_dashboard_slug_suffix",
+            "UID_DASHBOARD_SLUG_SUFFIX",
+            False,
+            bool,
+        ),
         ("general", "pretty_print", "PRETTY_PRINT", False, bool),
         ("general", "backup_workers", "BACKUP_WORKERS", 3, int),
         # AWS S3
@@ -66,13 +74,13 @@ def main(config_path=None):
         # GCP Storage
         ("gcp", "gcs_bucket_name", "GCS_BUCKET_NAME", "", None),
         ("gcp", "gcs_bucket_path", "GCS_BUCKET_PATH", "", None),
-        # InfluxDB
-        ("influxdb", "measurement", "INFLUXDB_MEASUREMENT", "grafana_backup", None),
-        ("influxdb", "host", "INFLUXDB_HOST", "", None),
-        ("influxdb", "port", "INFLUXDB_PORT", 8086, int),
-        ("influxdb", "username", "INFLUXDB_USERNAME", "", None),
-        ("influxdb", "password", "INFLUXDB_PASSWORD", "", None),
-        ("influxdb", "database", "INFLUXDB_DATABASE", "", None),
+        # # InfluxDB
+        # ("influxdb", "measurement", "INFLUXDB_MEASUREMENT", "grafana_backup", None),
+        # ("influxdb", "host", "INFLUXDB_HOST", "", None),
+        # ("influxdb", "port", "INFLUXDB_PORT", 8086, int),
+        # ("influxdb", "username", "INFLUXDB_USERNAME", "", None),
+        # ("influxdb", "password", "INFLUXDB_PASSWORD", "", None),
+        # ("influxdb", "database", "INFLUXDB_DATABASE", "", None),
     ]
 
     for section, key, env, default, t_type in settings_map:
@@ -80,7 +88,9 @@ def main(config_path=None):
 
     gcp_creds = os.getenv(
         "GOOGLE_APPLICATION_CREDENTIALS",
-        config.get("gcp", {}).get("google_application_credentials", "") if config else ""
+        config.get("gcp", {}).get("google_application_credentials", "")
+        if config
+        else "",
     )
     if gcp_creds:
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_creds
@@ -89,7 +99,9 @@ def main(config_path=None):
     extra_headers = {}
     if extra_headers_raw:
         try:
-            extra_headers = dict(h.split(":", 1) for h in extra_headers_raw.split(",") if ":" in h)
+            extra_headers = dict(
+                h.split(":", 1) for h in extra_headers_raw.split(",") if ":" in h
+            )
         except Exception:
             print("Error parsing GRAFANA_HEADERS")
 
@@ -123,7 +135,9 @@ def main(config_path=None):
         "HTTP_POST_HEADERS": http_post,
         "HTTP_GET_HEADERS_BASIC_AUTH": get_basic,
         "HTTP_POST_HEADERS_BASIC_AUTH": post_basic,
-        "TIMESTAMP": datetime.today().strftime(config_dict.get("BACKUP_FILE_FORMAT", "%Y-%m-%d-%H-%M")),
+        "TIMESTAMP": datetime.today().strftime(
+            config_dict.get("BACKUP_FILE_FORMAT", "%Y-%m-%d-%H-%M")
+        ),
     })
 
     return config_dict

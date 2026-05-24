@@ -27,7 +27,7 @@ class GeneralSettings:
 
 
 @dataclass
-class Aws:
+class AwsSettings:
     s3_bucket_name: str = ""
     s3_bucket_key: str = ""
     default_region: str = ""
@@ -37,12 +37,12 @@ class Aws:
 
 
 @dataclass
-class Azure:
+class AzureSettings:
     connection_string: str = ""
     container_name: str = ""
 
 
 @dataclass
-class GCP:
+class GCPSettings:
     connection_string: str = ""
     bucket_name: str = ""

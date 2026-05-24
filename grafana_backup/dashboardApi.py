@@ -1,24 +1,42 @@
-import re
 import json
-import requests
+import re
 import sys
-from grafana_backup.commons import log_response
+
+import requests
 from packaging import version
+
+from grafana_backup.commons import log_response
+from grafana_backup.core.sendRequests import GrafanaApiClient
 
 # Module-level session for connection pooling (HTTP keep-alive)
 _session = requests.Session()
 
 
+# core_config = CoreSettings(
+#     url="http://localhost:3000",
+#     headers={"Authorization": "Bearer your_token"},
+#     verify_ssl=False,
+#     client_cert="",
+#     debug=False,
+# )
+
+
 def health_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug):
-    url = "{0}/api/health".format(grafana_url)
+    client = GrafanaApiClient(
+        grafana_url, http_get_headers, verify_ssl, client_cert, debug
+    )
+    url = "/api/health"
     print("\n[Pre-Check] grafana health check: {0}".format(url))
-    return send_grafana_get(url, http_get_headers, verify_ssl, client_cert, debug)
+    return client.get(url)
 
 
 def auth_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug):
-    url = "{0}/api/org".format(grafana_url)
+    client = GrafanaApiClient(
+        grafana_url, http_get_headers, verify_ssl, client_cert, debug
+    )
+    url = "/api/org"
     print("\n[Pre-Check] grafana auth check: {0}".format(url))
-    return send_grafana_get(url, http_get_headers, verify_ssl, client_cert, debug)
+    return client.get(url)
 
 
 def uid_feature_check(grafana_url, http_get_headers, verify_ssl, client_cert, debug):
@@ -871,6 +889,7 @@ def get_grafana_version(grafana_url, verify_ssl, http_get_headers):
         )
 
 
+# TODO DONE in REQUESTS CLASS
 def send_grafana_get(url, http_get_headers, verify_ssl, client_cert, debug):
     r = _session.get(url, headers=http_get_headers, verify=verify_ssl, cert=client_cert)
 
@@ -888,6 +907,7 @@ def send_grafana_get(url, http_get_headers, verify_ssl, client_cert, debug):
         return (r.status_code, {})  # Return empty JSON
 
 
+# TODO DONE in REQUESTS CLASS
 def send_grafana_post(
     url, json_payload, http_post_headers, verify_ssl=False, client_cert=None, debug=True
 ):
@@ -906,6 +926,7 @@ def send_grafana_post(
         return (r.status_code, r.text)
 
 
+# TODO DONE in REQUESTS CLASS
 def send_grafana_put(
     url, json_payload, http_post_headers, verify_ssl=False, client_cert=None, debug=True
 ):
@@ -921,6 +942,7 @@ def send_grafana_put(
     return (r.status_code, r.json())
 
 
+# TODO DONE in REQUESTS CLASS
 def send_grafana_delete(
     url, http_get_headers, verify_ssl=False, client_cert=None, debug=True
 ):
