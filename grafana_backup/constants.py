@@ -3,5 +3,5 @@ import os
 homedir = os.path.expanduser("~")
 
 PKG_NAME = "grafana-backup"
-PKG_VERSION = "v1.6.4"
+PKG_VERSION = "v1.6.5"
 JSON_CONFIG_PATH = "{0}/.grafana-backup.json".format(homedir)
