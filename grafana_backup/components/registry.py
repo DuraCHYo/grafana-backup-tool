@@ -41,5 +41,4 @@ def load_component_functions(mode="save"):
             functions[name] = module.main
         except ImportError:
             continue
-    print(f"TUT {functions}")
     return functions
