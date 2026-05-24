@@ -34,7 +34,7 @@ def load_component_functions(mode="save"):
 
     for name in all_names:
         file_suffix = name.replace("-", "_")
-        module_path = f"grafana_backup.{mode}_{file_suffix}"
+        module_path = f"grafana_backup.{mode}.{mode}_{file_suffix}"
 
         try:
             module = importlib.import_module(module_path)
