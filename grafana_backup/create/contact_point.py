@@ -1,11 +1,12 @@
 import json
+
+from grafana_backup.components.registry import MINIMUM_GRAFANA_VERSION
+from grafana_backup.components.utils import get_grafana_version, status_code_validator
 from grafana_backup.dashboardApi import (
     create_contact_point,
-    get_grafana_version,
     search_contact_points,
     update_contact_point,
 )
-from packaging import version
 
 
 def main(args, settings, file_path):
@@ -16,17 +17,11 @@ def main(args, settings, file_path):
     client_cert = settings.get("CLIENT_CERT")
     debug = settings.get("DEBUG")
 
-    try:
-        grafana_version = get_grafana_version(grafana_url, verify_ssl, http_get_headers)
-    except KeyError as error:
-        raise Exception("Grafana version is not set.") from error
+    current_grafana_version = get_grafana_version(
+        grafana_url, verify_ssl, http_get_headers, client_cert, debug
+    )
 
-    if not grafana_version:
-        raise Exception("Grafana version is not set.")
-
-    minimum_version = version.parse("9.4.0")
-
-    if minimum_version <= grafana_version:
+    if MINIMUM_GRAFANA_VERSION <= current_grafana_version:
         with open(file_path, "r") as f:
             data = f.read()
 
@@ -35,9 +30,7 @@ def main(args, settings, file_path):
         )
         status_code = result[0]
         existing_contact_points = []
-        if status_code == 200:
-            # Successfully received list of contact points.
-            # Append contact points to list of existing contact points
+        if status_code_validator(status_code, 200):
             for ecp in result[1]:
                 existing_contact_points.append(ecp["uid"])
 
@@ -54,16 +47,12 @@ def main(args, settings, file_path):
                     client_cert,
                     debug,
                 )
-                if result[0] == 202:
-                    print("Successfully updated contact point")
-                else:
+                if not status_code_validator(result[0], 202):
                     print(
-                        "[ERROR] Contact point {0} failed to update. Return code:{1} - {2}".format(
-                            cp["uid"], result[0], result[1]
-                        )
+                        f"[ERROR] Contact point {cp['uid']} failed to update. Return code:{result[0]} - {result[1]}"
                     )
             else:
-                print("Contact point {0} does not exist, creating".format(cp["uid"]))
+                print(f"Contact point {cp['uid']} does not exist, creating")
                 result = create_contact_point(
                     json.dumps(cp),
                     grafana_url,
@@ -72,17 +61,12 @@ def main(args, settings, file_path):
                     client_cert,
                     debug,
                 )
-                if result[0] == 202:
-                    print("Successfully create contact point")
-                else:
+                if not status_code_validator(result[0], 202):
                     print(
-                        "[ERROR] Contact point {0} failed to create. Retufn code:{1} - {2}".format(
-                            cp["uid"], result[0], result[1]
-                        )
+                        f"[ERROR] Contact point {cp['uid']} failed to create. Return code:{result[0]} - {result[1]}"
                     )
+
     else:
         print(
-            "Unable to create contact points, requires Grafana version {0} or above. Current version is {1}".format(
-                minimum_version, grafana_version
-            )
+            f"Unable to create contact points, requires Grafana version {MINIMUM_GRAFANA_VERSION} or above. Current version is {current_grafana_version}"
         )

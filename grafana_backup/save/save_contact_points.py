@@ -1,7 +1,9 @@
 import os
-from grafana_backup.dashboardApi import search_contact_points, get_grafana_version
+
 from grafana_backup.commons import print_horizontal_line, save_json
-from packaging import version
+from grafana_backup.components.registry import MINIMUM_GRAFANA_VERSION
+from grafana_backup.components.utils import get_grafana_version, status_code_validator
+from grafana_backup.dashboardApi import search_contact_points
 
 
 def main(args, settings):
@@ -14,20 +16,12 @@ def main(args, settings):
     debug = settings.get("DEBUG")
     pretty_print = settings.get("PRETTY_PRINT")
     folder_path = "{0}/contact_points/{1}".format(backup_dir, timestamp)
-    log_file = "contact_points_{0}.txt".format(timestamp)
-    grafana_version_string = settings.get("GRAFANA_VERSION")
 
-    if grafana_version_string:
-        grafana_version = version.parse(grafana_version_string)
+    current_grafana_version = get_grafana_version(
+        grafana_url, verify_ssl, http_get_headers, client_cert, debug
+    )
 
-    try:
-        grafana_version = get_grafana_version(grafana_url, verify_ssl, http_get_headers)
-    except KeyError as error:
-        if not grafana_version:
-            raise Exception("Grafana version is not set.") from error
-
-    minimum_version = version.parse("9.0.0")
-    if minimum_version <= grafana_version:
+    if MINIMUM_GRAFANA_VERSION <= current_grafana_version:
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
@@ -37,9 +31,7 @@ def main(args, settings):
         save_contact_points("contact_points", contact_points, folder_path, pretty_print)
     else:
         print(
-            "Unable to save contact points, requires Grafana version {0} or above. Current version is {1}".format(
-                minimum_version, grafana_version
-            )
+            f"Unable to save contact points, requires Grafana version {MINIMUM_GRAFANA_VERSION} or above. Current version is {current_grafana_version}"
         )
 
     if not os.path.exists(folder_path):
@@ -52,20 +44,14 @@ def get_all_contact_points_in_grafana(
     (status, content) = search_contact_points(
         grafana_url, http_get_headers, verify_ssl, client_cert, debug
     )
-    if status == 200:
+    if status_code_validator(status, 200):
         contact_points = content
-        print("There are {0} contact points: ".format(len(contact_points)))
+        print(f"There are {len(contact_points)} contact points: ")
         for contact_point in contact_points:
-            print(
-                "name: {0}, type: {1}".format(
-                    contact_point["name"], contact_point["type"]
-                )
-            )
+            print(f"name: {contact_point['name']}, type: {contact_point['type']}")
         return contact_points
     else:
-        print(
-            "query contact points failed, status: {0}, msg: {1}".format(status, content)
-        )
+        print(f"query contact points failed, status: {status}, msg: {content}")
         return []
 
 
@@ -74,5 +60,5 @@ def save_contact_points(file_name, contact_points, folder_path, pretty_print):
         file_name, contact_points, folder_path, "contact_point", pretty_print
     )
     print_horizontal_line()
-    print("contact points are saved to {0}".format(file_path))
+    print(f"contact points are saved to {file_path}")
     print_horizontal_line()
