@@ -835,7 +835,7 @@ def send_grafana_get(url, http_get_headers, verify_ssl, client_cert, debug):
         log_response(r)
 
     if r.status_code == 404:
-        print(f"⚠ Warning: Resource not found at {url}, skipping...")
+        print(f"Warning: Resource not found at {url}, skipping...")
         return (404, {})  # Return empty JSON insead of error
 
     try:

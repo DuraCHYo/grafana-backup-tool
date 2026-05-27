@@ -68,5 +68,4 @@ def main(settings):
         dashboard_uid_support,
         datasource_uid_support,
         paging_support,
-        is_contact_point_available,
     )

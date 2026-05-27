@@ -71,7 +71,7 @@ def main():
         if not archive:
             raise FileNotFoundError(
                 "No archive file provided for restore mode.",
-                "Use: grafana-backup restore <file> OR set ENV ARCHIVE_FILE",
+                "Use: grafana-backup restore <file> OR set $ARCHIVE_FILE",
             )
 
         backup_dir = settings.get("BACKUP_DIR", "_OUTPUT_")
