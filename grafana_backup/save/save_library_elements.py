@@ -1,8 +1,11 @@
 import os
-from grafana_backup.dashboardApi import search_library_elements
+
 from grafana_backup.commons import print_horizontal_line, save_json
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import search_library_elements
 
 
+@register_component("save", "library-elements")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")

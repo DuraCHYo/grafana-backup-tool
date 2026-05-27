@@ -1,8 +1,11 @@
 import os
-from grafana_backup.dashboardApi import search_teams, search_team_members
+
 from grafana_backup.commons import print_horizontal_line, save_json
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import search_team_members, search_teams
 
 
+@register_component("save", "team-members")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")

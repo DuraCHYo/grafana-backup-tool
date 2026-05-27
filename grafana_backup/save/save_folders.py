@@ -1,13 +1,15 @@
 import os
-import json
+
+from grafana_backup.commons import print_horizontal_line, save_json
+from grafana_backup.components.registry import register_component
 from grafana_backup.dashboardApi import (
-    search_folders,
     get_folder,
     get_folder_permissions,
+    search_folders,
 )
-from grafana_backup.commons import print_horizontal_line, save_json
 
 
+@register_component("save", "folders")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")

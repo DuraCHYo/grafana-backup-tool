@@ -1,8 +1,11 @@
 import time
-from grafana_backup.dashboardApi import search_annotations, delete_annotation
+
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import delete_annotation, search_annotations
 
 
+@register_component("delete", "annotations")
 def main(args, settings):
     grafana_url = settings.get("GRAFANA_URL")
     http_get_headers = settings.get("HTTP_POST_HEADERS")

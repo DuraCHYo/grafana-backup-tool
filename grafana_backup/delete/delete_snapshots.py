@@ -1,7 +1,9 @@
-from grafana_backup.dashboardApi import search_snapshot, delete_snapshot
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import delete_snapshot, search_snapshot
 
 
+@register_component("delete", "snapshots")
 def main(args, settings):
     grafana_url = settings.get("GRAFANA_URL")
     http_get_headers = settings.get("HTTP_GET_HEADERS")

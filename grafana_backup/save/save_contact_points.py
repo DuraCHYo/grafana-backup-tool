@@ -1,11 +1,15 @@
 import os
 
 from grafana_backup.commons import print_horizontal_line, save_json
-from grafana_backup.components.registry import MINIMUM_GRAFANA_VERSION
+from grafana_backup.components.registry import (
+    MINIMUM_GRAFANA_VERSION,
+    register_component,
+)
 from grafana_backup.components.utils import get_grafana_version, status_code_validator
 from grafana_backup.dashboardApi import search_contact_points
 
 
+@register_component("save", "contact-points")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")

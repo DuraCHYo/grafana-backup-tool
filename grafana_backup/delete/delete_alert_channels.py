@@ -1,4 +1,5 @@
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
 from grafana_backup.components.utils import status_code_validator
 from grafana_backup.dashboardApi import (
     delete_alert_channel_by_id,
@@ -7,6 +8,7 @@ from grafana_backup.dashboardApi import (
 )
 
 
+@register_component("delete", "alert-channels")
 def main(args, settings):
     grafana_url = settings.get("GRAFANA_URL")
     http_get_headers = settings.get("HTTP_POST_HEADERS")

@@ -4,6 +4,19 @@ import re
 MINIMUM_GRAFANA_VERSION = 940
 VERSION_PATTERN = re.compile(r"(\d+\.\d+\.\d+)")
 
+# Registry for components
+_COMPONENTS_REGISTRY = {"save": {}, "delete": {}}
+
+
+def register_component(mode: str, name: str):
+
+    def decorator(func):
+        _COMPONENTS_REGISTRY[mode][name] = func
+        return func
+
+    return decorator
+
+
 # TODO - refactor to use get_grafana_version from utils, and remove redundant code in utils
 # def get_grafana_version(
 #     grafana_url: str,
@@ -64,7 +77,27 @@ def get_all_components():
 
 
 def load_component_functions(mode="save"):
-    functions = {}
+    """Loads all registered components for the selected mode
+
+    Args:
+        mode (str, optional): mode (str): Mode to import modules from (e.g., "save" or "delete"). Defaults to "save".
+
+    Returns:
+        _type_: _description_
+    """
+    # If the registry is empty, import all modules to initialize
+    if not _COMPONENTS_REGISTRY[mode]:
+        _import_all_modules(mode)
+
+    return _COMPONENTS_REGISTRY[mode].copy()
+
+
+def _import_all_modules(mode: str):
+    """Imports all modules in the mode for initializing decorators.
+
+    Args:
+        mode (str): Mode to import modules from (e.g., "save" or "delete")
+    """
     all_names = get_all_components()
 
     for name in all_names:
@@ -72,8 +105,6 @@ def load_component_functions(mode="save"):
         module_path = f"grafana_backup.{mode}.{mode}_{file_suffix}"
 
         try:
-            module = importlib.import_module(module_path)
-            functions[name] = module.main
+            importlib.import_module(module_path)
         except ImportError:
             continue
-    return functions

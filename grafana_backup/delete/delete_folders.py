@@ -1,7 +1,9 @@
-from grafana_backup.dashboardApi import search_folders, delete_folder
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import delete_folder, search_folders
 
 
+@register_component("delete", "folders")
 def main(args, settings):
     grafana_url = settings.get("GRAFANA_URL")
     http_get_headers = settings.get("HTTP_GET_HEADERS")
