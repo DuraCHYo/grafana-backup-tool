@@ -1,7 +1,8 @@
-from glob import glob
 import os
-import tarfile
 import shutil
+import tarfile
+from glob import glob
+
 from grafana_backup.components import registry as rg
 
 
@@ -9,7 +10,7 @@ def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")
 
-    archive_file = "{0}/{1}.tar.gz".format(backup_dir, timestamp)
+    archive_file = f"{backup_dir}/{timestamp}.tgz"
     backup_files = list()
     folders_to_clean = set()
 
@@ -24,7 +25,7 @@ def main(args, settings):
 
             if found_paths:
                 for file_path in found_paths:
-                    print("Found {0} at: {1}".format(folder_name, file_path))
+                    print(f"Found {folder_name} at: {file_path}")
                     backup_files.append(file_path)
                     folders_to_clean.add(os.path.abspath(file_path))
                 break
@@ -42,7 +43,7 @@ def main(args, settings):
             component_name = os.path.basename(os.path.dirname(file_path))
             tar.add(file_path, arcname=component_name)
 
-    print("Archive created at: {0}".format(archive_file))
+    print(f"Archive created at: {archive_file}")
 
     print("\nCleaning up temporary files...")
     for folder in folders_to_clean:
@@ -52,6 +53,6 @@ def main(args, settings):
             if not os.listdir(parent_dir):
                 os.rmdir(parent_dir)
         except Exception as e:
-            print("Error cleaning up {0}: {1}".format(folder, e))
+            print(f"Error cleaning up {folder}: {e}")
 
     print("Done!")

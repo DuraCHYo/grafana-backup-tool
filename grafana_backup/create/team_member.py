@@ -54,9 +54,7 @@ def main(args, settings, file_path):
             debug,
         )
         print(
-            "create team member: {0}, status: {1}, msg: {2}".format(
-                team_member["name"], result[0], result[1]
-            )
+            f"create team member: {team_member['name']}, status: {result[0]}, msg: {result[1]}"
         )
     else:
         print(

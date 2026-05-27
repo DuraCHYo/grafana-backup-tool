@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.6] - 2026-05-28
+
+# Changed
+- fix: remove unused contact point support from API checks and clean up component loading
+- feat: implement folder existence check and alert rule deletion functionality
+- feat: add component registration wrapped by decorators for delete and save operations across resources
+- feat: add folder management functions and update print statements for clarity
+- feat: Refactor Grafana backup scripts to improve version checking and error handling
+- feat: implement GrafanaApiClient with CRUD methods and error handling
+- feat: implement health check and version retrieval functions in utils
+
 # [v1.6.5] - 2026-05-24
 
 ### Changed

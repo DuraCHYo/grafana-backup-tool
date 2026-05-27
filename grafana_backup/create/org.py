@@ -1,4 +1,5 @@
 import json
+
 from grafana_backup.dashboardApi import create_org, update_org
 
 
@@ -27,9 +28,7 @@ def main(args, settings, file_path):
                 debug,
             )
             print(
-                'update org "{0}" response status: {1}, msg: {2} \n'.format(
-                    content.get("name", ""), result[0], result[1]
-                )
+                f'update org "{content.get("name", "")}" response status: {result[0]}, msg: {result[1]} \n'
             )
         else:
             result = create_org(
@@ -41,9 +40,7 @@ def main(args, settings, file_path):
                 debug,
             )
             print(
-                'create org "{0}" response status: {1}, msg: {2} \n'.format(
-                    content.get("name", ""), result[0], result[1]
-                )
+                f'create org "{content.get("name", "")}" response status: {result[0]}, msg: {result[1]} \n'
             )
     else:
         print(

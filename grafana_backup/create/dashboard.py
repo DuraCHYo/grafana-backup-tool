@@ -1,5 +1,6 @@
 import json
-from grafana_backup.dashboardApi import get_folder_id, create_dashboard
+
+from grafana_backup.dashboardApi import create_dashboard, get_folder_id
 
 
 def main(args, settings, file_path):
@@ -32,7 +33,5 @@ def main(args, settings, file_path):
         debug,
     )
     print(
-        "create dashboard {0} response status: {1}, msg: {2} \n".format(
-            content["dashboard"].get("title", ""), result[0], result[1]
-        )
+        f"create dashboard {content['dashboard'].get('title', '')} response status: {result[0]}, msg: {result[1]} \n"
     )

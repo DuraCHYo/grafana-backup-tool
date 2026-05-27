@@ -1,10 +1,13 @@
 import os
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from grafana_backup.dashboardApi import search_dashboard, get_dashboard
+
 from grafana_backup.commons import print_horizontal_line, save_json
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import get_dashboard, search_dashboard
 
 
+@register_component("save", "dashboards")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")

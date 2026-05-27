@@ -1,4 +1,5 @@
 import json
+
 from grafana_backup.dashboardApi import create_library_element, get_folder
 
 
@@ -32,7 +33,5 @@ def main(args, settings, file_path):
         debug,
     )
     print(
-        "create library_elements: {0}, status: {1}, msg: {2}".format(
-            library_element["name"], result[0], result[1]
-        )
+        f"create library_elements: {library_element['name']}, status: {result[0]}, msg: {result[1]}"
     )

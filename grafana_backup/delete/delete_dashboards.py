@@ -1,13 +1,15 @@
-from grafana_backup.dashboardApi import (
-    search_dashboard,
-    delete_dashboard_by_uid,
-    delete_dashboard_by_slug,
-)
 from grafana_backup.commons import (
     print_horizontal_line,
 )
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import (
+    delete_dashboard_by_slug,
+    delete_dashboard_by_uid,
+    search_dashboard,
+)
 
 
+@register_component("delete", "dashboards")
 def main(args, settings):
     limit = settings.get("SEARCH_API_LIMIT")
     grafana_url = settings.get("GRAFANA_URL")

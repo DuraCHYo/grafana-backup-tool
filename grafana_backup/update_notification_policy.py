@@ -1,6 +1,8 @@
 import json
-from grafana_backup.dashboardApi import update_notification_policy, get_grafana_version
-from packaging import version
+
+from grafana_backup.components.registry import MINIMUM_GRAFANA_VERSION
+from grafana_backup.components.utils import get_grafana_version
+from grafana_backup.dashboardApi import update_notification_policy
 
 
 def main(args, settings, file_path):
@@ -11,17 +13,10 @@ def main(args, settings, file_path):
     client_cert = settings.get("CLIENT_CERT")
     debug = settings.get("DEBUG")
 
-    try:
-        grafana_version = get_grafana_version(grafana_url, verify_ssl, http_get_headers)
-    except KeyError as error:
-        raise Exception("Grafana version is not set.") from error
-
-    if not grafana_version:
-        raise Exception("Grafana version is not set.")
-
-    minimum_version = version.parse("9.4.0")
-
-    if minimum_version <= grafana_version:
+    current_grafana_version = get_grafana_version(
+        grafana_url, verify_ssl, http_get_headers, client_cert, debug
+    )
+    if MINIMUM_GRAFANA_VERSION <= current_grafana_version:
         with open(file_path, "r") as f:
             data = f.read()
 
@@ -34,14 +29,8 @@ def main(args, settings, file_path):
             client_cert,
             debug,
         )
-        print(
-            "update notification_policy, status: {0}, msg: {1}".format(
-                result[0], result[1]
-            )
-        )
+        print(f"update notification_policy, status: {result[0]}, msg: {result[1]}")
     else:
         print(
-            "Unable to update notification policy, requires Grafana version {0} or above. Current version is {1}".format(
-                minimum_version, grafana_version
-            )
+            f"Unable to update notification policy, requires Grafana version {MINIMUM_GRAFANA_VERSION} or above. Current version is {current_grafana_version}"
         )

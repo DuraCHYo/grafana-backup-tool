@@ -1,10 +1,13 @@
 from grafana_backup.commons import print_horizontal_line
-from grafana_backup.dashboardApi import (
-    health_check,
+from grafana_backup.components.utils import (
     auth_check,
-    uid_feature_check,
-    paging_feature_check,
+    health_check,
+    status_code_validator,
+)
+from grafana_backup.dashboardApi import (
     contact_point_check,
+    paging_feature_check,
+    uid_feature_check,
 )
 
 
@@ -17,19 +20,22 @@ def main(settings):
     api_health_check = settings.get("API_HEALTH_CHECK")
     api_auth_check = settings.get("API_AUTH_CHECK")
 
+    # TODO - refactor to use get_grafana_version from utils, and remove redundant code in utils
+    # get_grafana_version(grafana_url, verify_ssl, http_get_headers, client_cert, debug)
+
     if api_health_check:
-        (status, json_resp) = health_check(
+        (status_code, json_response) = health_check(
             grafana_url, http_get_headers, verify_ssl, client_cert, debug
         )
-        if not status == 200:
-            return (status, json_resp, None, None, None, None)
+        if not status_code_validator(status_code, 200):
+            return (status_code, json_response, None, None, None, None)
 
     if api_auth_check:
-        (status, json_resp) = auth_check(
+        (status_code, json_response) = auth_check(
             grafana_url, http_get_headers, verify_ssl, client_cert, debug
         )
-        if not status == 200:
-            return (status, json_resp, None, None, None, None)
+        if not status_code_validator(status_code, 200):
+            return (status_code, json_response, None, None, None, None)
 
     dashboard_uid_support, datasource_uid_support = uid_feature_check(
         grafana_url, http_get_headers, verify_ssl, client_cert, debug
@@ -50,17 +56,16 @@ def main(settings):
     )
 
     print_horizontal_line()
-    if status == 200:
+    if status_code_validator(status_code, 200):
         print("[Pre-Check] Server status is 'OK' !!")
     else:
-        print("[Pre-Check] Server status is NOT OK !!: {0}".format(json_resp))
+        print(f"[Pre-Check] Server status is NOT OK !!: {json_response}")
     print_horizontal_line()
 
     return (
-        status,
-        json_resp,
+        status_code,
+        json_response,
         dashboard_uid_support,
         datasource_uid_support,
         paging_support,
-        is_contact_point_available,
     )

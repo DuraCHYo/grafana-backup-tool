@@ -1,11 +1,13 @@
-from grafana_backup.dashboardApi import (
-    search_datasource,
-    delete_datasource_by_uid,
-    delete_datasource_by_id,
-)
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import (
+    delete_datasource_by_id,
+    delete_datasource_by_uid,
+    search_datasource,
+)
 
 
+@register_component("delete", "datasources")
 def main(args, settings):
     debug = settings.get("DEBUG")
     verify_ssl = settings.get("VERIFY_SSL")

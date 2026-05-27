@@ -1,8 +1,9 @@
-from grafana_backup.dashboardApi import search_teams
-from grafana_backup.dashboardApi import delete_team
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import delete_team, search_teams
 
 
+@register_component("delete", "teams")
 def main(args, settings):
     grafana_url = settings.get("GRAFANA_URL")
     http_get_headers = settings.get("HTTP_POST_HEADERS")

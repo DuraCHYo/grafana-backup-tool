@@ -1,4 +1,5 @@
 import json
+
 from grafana_backup.dashboardApi import create_alert_channel
 
 
@@ -22,7 +23,5 @@ def main(args, settings, file_path):
         debug,
     )
     print(
-        "create alert_channel: {0}, status: {1}, msg: {2}".format(
-            alert_channel["name"], result[0], result[1]
-        )
+        f"create alert_channel: {alert_channel['name']}, status: {result[0]}, msg: {result[1]}"
     )

@@ -1,11 +1,13 @@
 import os
 
 from grafana_backup.commons import print_horizontal_line, save_json
+from grafana_backup.components.registry import register_component
 from grafana_backup.dashboardApi import get_dashboard_versions, get_version
 
 from .save_dashboards import get_all_dashboards_in_grafana
 
 
+@register_component("save", "dashboard-versions")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")

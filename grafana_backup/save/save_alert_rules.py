@@ -1,13 +1,17 @@
 import os
+
+from grafana_backup.commons import print_horizontal_line, save_json
+from grafana_backup.components.registry import (
+    MINIMUM_GRAFANA_VERSION,
+    register_component,
+)
+from grafana_backup.components.utils import get_grafana_version, status_code_validator
 from grafana_backup.dashboardApi import (
     search_alert_rules,
-    get_alert_rule,
-    get_grafana_version,
 )
-from grafana_backup.commons import print_horizontal_line, save_json
-from packaging import version
 
 
+@register_component("save", "alert-rules")
 def main(args, settings):
     backup_dir = settings.get("BACKUP_DIR")
     timestamp = settings.get("TIMESTAMP")
@@ -19,19 +23,12 @@ def main(args, settings):
     pretty_print = settings.get("PRETTY_PRINT")
     folder_path = "{0}/alert_rules/{1}".format(backup_dir, timestamp)
     log_file = "alert_rules_{0}.txt".format(timestamp)
-    grafana_version_string = settings.get("GRAFANA_VERSION")
-    if grafana_version_string:
-        grafana_version = version.parse(grafana_version_string)
 
-    try:
-        grafana_version = get_grafana_version(grafana_url, verify_ssl, http_get_headers)
-    except KeyError as error:
-        if not grafana_version:
-            raise Exception("Grafana version is not set.") from error
+    current_grafana_version = get_grafana_version(
+        grafana_url, verify_ssl, http_get_headers, client_cert, debug
+    )
 
-    minimum_version = version.parse("9.4.0")
-
-    if minimum_version <= grafana_version:
+    if MINIMUM_GRAFANA_VERSION <= current_grafana_version:
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
@@ -47,27 +44,25 @@ def main(args, settings):
         )
     else:
         print(
-            "Unable to save alert rules, requires Grafana version {0} or above. Current version is {1}".format(
-                minimum_version, grafana_version
-            )
+            f"Unable to save alert rules, requires Grafana version {MINIMUM_GRAFANA_VERSION} or above. Current version is {current_grafana_version}"
         )
 
 
 def get_all_alert_rules_in_grafana(
     grafana_url, http_get_headers, verify_ssl, client_cert, debug
 ):
-    (status, content) = search_alert_rules(
+    (status_code, json_response) = search_alert_rules(
         grafana_url, http_get_headers, verify_ssl, client_cert, debug
     )
-    if status == 200:
-        alert_rules = content
-        print("There are {0} alert rules:".format(len(alert_rules)))
+    if status_code_validator(status_code):
+        alert_rules = json_response
+        print(f"There are {len(alert_rules)} alert rules:")
         for alert_rule in alert_rules:
-            print("name: {0}".format(alert_rule["title"]))
+            print(f"name: {alert_rule['title']}")
         return alert_rules
     else:
         raise Exception(
-            "Failed to get alert rules, status: {0}, msg: {1}".format(status, content)
+            f"Failed to get alert rules, status: {status_code}, msg: {json_response}"
         )
 
 
@@ -86,9 +81,9 @@ def save_alert_rules(
     )
     for alert_rule in alert_rules:
         print_horizontal_line()
-        print(alert_rule)
+        print(f"alert_rule: {alert_rule['title']}")
         file_path = save_json(
             alert_rule["uid"], alert_rule, folder_path, "alert_rule", pretty_print
         )
-        print("alert_rule: {0} -> saved to: {1}".format(alert_rule["title"], file_path))
+        print(f"alert_rule: {alert_rule['title']} -> saved to: {file_path}")
         print_horizontal_line()

@@ -1,4 +1,6 @@
 import json
+
+from grafana_backup.components.utils import status_code_validator
 from grafana_backup.dashboardApi import create_snapshot
 
 
@@ -26,15 +28,7 @@ def main(args, settings, file_path):
         client_cert,
         debug,
     )
-    if status == 200:
-        print(
-            "create snapshot: {0}, status: {1}, msg: {2}".format(
-                snapshot["name"], status, content
-            )
-        )
+    if status_code_validator(status, 200):
+        print(f"create snapshot: {snapshot['name']}, status: {status}, msg: {content}")
     else:
-        print(
-            "creating snapshot {0} failed with status {1}".format(
-                snapshot["name"], status
-            )
-        )
+        print(f"creating snapshot {snapshot['name']} failed with status {status}")

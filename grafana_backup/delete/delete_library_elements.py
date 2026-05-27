@@ -1,8 +1,9 @@
-from grafana_backup.dashboardApi import search_library_elements
-from grafana_backup.dashboardApi import delete_library_element
 from grafana_backup.commons import print_horizontal_line
+from grafana_backup.components.registry import register_component
+from grafana_backup.dashboardApi import delete_library_element, search_library_elements
 
 
+@register_component("delete", "library-elements")
 def main(args, settings):
     grafana_url = settings.get("GRAFANA_URL")
     http_get_headers = settings.get("HTTP_POST_HEADERS")

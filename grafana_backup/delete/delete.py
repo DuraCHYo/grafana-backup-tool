@@ -3,20 +3,18 @@ import sys
 from grafana_backup.api_checks import main as api_checks
 
 from .delete_alert_channels import main as delete_alert_channels
+from .delete_alert_rules import main as delete_alert_rules
 from .delete_annotations import main as delete_annotations
 from .delete_dashboards import main as delete_dashboards
 from .delete_datasources import main as delete_datasources
 from .delete_folders import main as delete_folders
 from .delete_library_elements import main as delete_library_elements
 from .delete_snapshots import main as delete_snapshots
-from .delete_team_members import main as delete_team_members
 
 
 def main(args, settings):
     arg_components = args.get("--components", False)
 
-    # By default, teams should not be deleted. Sinces teams don't have unique ids across instances, they would be
-    # recreated with different ids, therefore loosing references to folder permissions and team members.
     delete_functions = {
         "dashboards": delete_dashboards,
         "datasources": delete_datasources,
@@ -25,7 +23,8 @@ def main(args, settings):
         "snapshots": delete_snapshots,
         "annotations": delete_annotations,
         "library-elements": delete_library_elements,
-        "team-members": delete_team_members,
+        # "team-members": delete_team_members,  # Not included by default due to potential issues with team references after deletion
+        "alert-rules": delete_alert_rules,
     }
 
     (
@@ -34,7 +33,6 @@ def main(args, settings):
         dashboard_uid_support,
         datasource_uid_support,
         paging_support,
-        is_contact_point_available,
     ) = api_checks(settings)
 
     # Do not continue if API is unavailable or token is not valid

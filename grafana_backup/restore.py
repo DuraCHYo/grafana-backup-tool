@@ -1,27 +1,26 @@
-from grafana_backup.create.org import main as create_org
-from grafana_backup.api_checks import main as api_checks
-from grafana_backup.create.folder import main as create_folder
-from grafana_backup.update_folder_permissions import main as update_folder_permissions
-from grafana_backup.create.datasource import main as create_datasource
-from grafana_backup.create.dashboard import main as create_dashboard
-from grafana_backup.create.alert_channel import main as create_alert_channel
-from grafana_backup.create.alert_rule import main as create_alert_rule
-from grafana_backup.create.user import main as create_user
-from grafana_backup.create.snapshot import main as create_snapshot
-from grafana_backup.create.annotation import main as create_annotation
-from grafana_backup.create.team import main as create_team
-from grafana_backup.create.team_member import main as create_team_member
-from grafana_backup.create.library_element import main as create_library_element
-from grafana_backup.create.contact_point import main as create_contact_point
-from grafana_backup.update_notification_policy import main as update_notification_policy
-from glob import glob
+import collections
+import fnmatch
+import os
 import sys
 import tarfile
 import tempfile
-import os
-import shutil
-import fnmatch
-import collections
+from glob import glob
+
+from grafana_backup.api_checks import main as api_checks
+from grafana_backup.create.alert_channel import main as create_alert_channel
+from grafana_backup.create.alert_rule import main as create_alert_rule
+from grafana_backup.create.annotation import main as create_annotation
+from grafana_backup.create.contact_point import main as create_contact_point
+from grafana_backup.create.dashboard import main as create_dashboard
+from grafana_backup.create.datasource import main as create_datasource
+from grafana_backup.create.folder import main as create_folder
+from grafana_backup.create.library_element import main as create_library_element
+from grafana_backup.create.org import main as create_org
+from grafana_backup.create.snapshot import main as create_snapshot
+from grafana_backup.create.team import main as create_team
+from grafana_backup.create.team_member import main as create_team_member
+from grafana_backup.create.user import main as create_user
+from grafana_backup.update_folder_permissions import main as update_folder_permissions
 
 
 def main(args, settings):
@@ -41,9 +40,7 @@ def main(args, settings):
         dashboard_uid_support,
         datasource_uid_support,
         paging_support,
-        contact_point_support,
     ) = api_checks(settings)
-    settings.update({"CONTACT_POINT_SUPPORT": contact_point_support})
 
     # Do not continue if API is unavailable or token is not valid
     if not status == 200:
@@ -55,7 +52,7 @@ def main(args, settings):
     provider = get_provider(settings)
 
     archive_name_only = os.path.basename(arg_archive_file)
-    
+
     backup_dir = settings.get("BACKUP_DIR")
 
     if provider:
@@ -69,11 +66,13 @@ def main(args, settings):
         path_to_open = arg_archive_file
         if not os.path.exists(path_to_open):
             path_to_open = os.path.join(backup_dir, arg_archive_file)
-            
+
         if not os.path.exists(path_to_open):
-            print(f"Local file {arg_archive_file} not found (checked in {backup_dir} too)")
+            print(
+                f"Local file {arg_archive_file} not found (checked in {backup_dir} too)"
+            )
             sys.exit(1)
-            
+
         tar = tarfile.open(name=path_to_open, mode="r:gz")
 
     # TODO:
