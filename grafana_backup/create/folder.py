@@ -1,5 +1,6 @@
 import json
 import os
+
 from grafana_backup.dashboardApi import create_folder
 
 
@@ -31,9 +32,7 @@ def main(args, settings, file_path):
                 debug,
             )
             print(
-                "create folder {0}, status: {1}, msg: {2}\n".format(
-                    folder.get("title", ""), result[0], result[1]
-                )
+                f"create folder {folder.get('title', '')}, status: {result[0]}, msg: {result[1]}\n"
             )
 
     # second loop with parentUid
@@ -51,7 +50,5 @@ def main(args, settings, file_path):
                 debug,
             )
             print(
-                "create folder {0}, status: {1}, msg: {2}\n".format(
-                    folder.get("title", ""), result[0], result[1]
-                )
+                f"create folder {folder.get('title', '')}, status: {result[0]}, msg: {result[1]}\n"
             )

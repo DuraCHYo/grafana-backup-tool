@@ -1,5 +1,6 @@
 import json
-from grafana_backup.dashboardApi import create_user, add_user_to_org
+
+from grafana_backup.dashboardApi import add_user_to_org, create_user
 
 
 def main(args, settings, file_path):
@@ -29,9 +30,7 @@ def main(args, settings, file_path):
             debug,
         )
         print(
-            'create user "{0}" response status: {1}, msg: {2} \n'.format(
-                user.get("login", ""), result[0], result[1]
-            )
+            f'create user "{user.get("login", "")}" response status: {result[0]}, msg: {result[1]} \n'
         )
 
         if result[0] == 200:
@@ -50,9 +49,7 @@ def main(args, settings, file_path):
                     debug,
                 )
                 print(
-                    'add user "{0}" to org: {1} response status: {2}, msg: {3}'.format(
-                        user.get("login", ""), org.get("name", ""), result[0], result[1]
-                    )
+                    f'add user "{user.get("login", "")}" to org: {org.get("name", "")} response status: {result[0]}, msg: {result[1]}'
                 )
     else:
         print(

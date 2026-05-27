@@ -1,4 +1,5 @@
 import json
+
 from grafana_backup.dashboardApi import create_team
 
 
@@ -16,8 +17,4 @@ def main(args, settings, file_path):
     result = create_team(
         json.dumps(team), grafana_url, http_post_headers, verify_ssl, client_cert, debug
     )
-    print(
-        "create teams: {0}, status: {1}, msg: {2}".format(
-            team["name"], result[0], result[1]
-        )
-    )
+    print(f"create teams: {team['name']}, status: {result[0]}, msg: {result[1]}")
