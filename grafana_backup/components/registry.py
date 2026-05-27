@@ -62,10 +62,8 @@ COMPONENTS = {
         "alert-rules",
         "contact-points",
         "notification-policy",
-        "mute-timings",
-        "alert-templates",
     ],
-    "access": ["organizations", "users", "teams", "team-members", "service-accounts"],
+    "access": ["organizations", "users", "teams", "team-members"],
 }
 
 
@@ -77,18 +75,15 @@ def get_all_components():
 
 
 def load_component_functions(mode="save"):
-    """Loads all registered components for the selected mode
+    """Loads all registered components for the selected mode.
 
     Args:
-        mode (str, optional): mode (str): Mode to import modules from (e.g., "save" or "delete"). Defaults to "save".
+        mode (str, optional): Mode to import modules from (e.g., "save" or "delete"). Defaults to "save".
 
     Returns:
-        _type_: _description_
+        dict: Mapping of component name to component function.
     """
-    # If the registry is empty, import all modules to initialize
-    if not _COMPONENTS_REGISTRY[mode]:
-        _import_all_modules(mode)
-
+    _import_all_modules(mode)
     return _COMPONENTS_REGISTRY[mode].copy()
 
 

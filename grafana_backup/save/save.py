@@ -9,7 +9,7 @@ from grafana_backup.providers import get_provider
 def main(args, settings):
     all_backup_functions = load_component_functions(mode="save")
 
-    status, json_resp, db_uid, ds_uid, paging, cp_support = api_checks(settings)
+    status, json_resp, db_uid, ds_uid, paging = api_checks(settings)
     if status != 200:
         print(f"Grafana server status is not ok: {json_resp}")
         sys.exit(1)
@@ -18,7 +18,6 @@ def main(args, settings):
         "DASHBOARD_UID_SUPPORT": db_uid,
         "DATASOURCE_UID_SUPPORT": ds_uid,
         "PAGING_SUPPORT": paging,
-        "CONTACT_POINT_SUPPORT": cp_support,
     })
 
     arg_components = args.get("--components", False)
