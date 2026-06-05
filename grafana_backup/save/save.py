@@ -43,7 +43,7 @@ def main(args, settings):
     if provider:
         backup_dir = settings.get("BACKUP_DIR")
         timestamp = settings.get("TIMESTAMP")
-        filename = f"{timestamp}.tar.gz"
+        filename = f"{timestamp}.tgz"
         local_path = f"{backup_dir}/{filename}"
 
         provider.upload(local_path, filename)

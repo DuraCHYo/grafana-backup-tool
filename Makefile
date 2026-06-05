@@ -2,10 +2,10 @@
 .PHONY: build shell backup restore test update_version
 
 IMAGE_NAME := grafana-backup-tool
-IMAGE_TAG := v1.6.5
+IMAGE_TAG := v1.6.6
 GRAFANA_URL := http://localhost:3000
 GRAFANA_TOKEN := SA_TOKEN
-NEW_VERSION := v1.6.6
+NEW_VERSION := v1.6.7
 
 build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .

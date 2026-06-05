@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.7] - 2026-06-05
+
+### Fix
+- Fixed archive file extensions when uploading to S3
+
 # [v1.6.6] - 2026-05-28
 
 # Changed
