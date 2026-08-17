@@ -17,6 +17,9 @@ jobs:
           - os: windows-latest
             artifact_name: grafana-backup-tool-windows-amd64.exe
             binary_src: dist/grafana-backup-tool.exe
+          - os: ubuntu-24.04-arm64
+            artifact_name: grafana-backup-tool-linux-arm64
+            binary_src: dist/grafana-backup-tool
 
     runs-on: ${{ matrix.os }}
 
