@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [v.2.0.0] - ?-?-?
 - Plan: Rewrite all code
 
+# [v1.6.8] - 2026-08-17
+
+### Fix
+- Added binaries for run on windows and linux
+
 # [v1.6.7] - 2026-06-05
 
 ### Fix
