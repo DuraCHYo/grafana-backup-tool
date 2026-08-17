@@ -1,4 +1,4 @@
-uv run grafana-backup restore --config grafana_backup/conf/grafanaSettings.json _OUTPUT_/202603240710.tar.gz
+uv run grafana-backup restore --config grafana_backup/conf/grafanaSettings.json _OUTPUT_/2026-08-12-21-32.tgz
 uv run grafana-backup save --config grafana_backup/conf/grafanaSettings.json
 
 docker exec -ti <container name> /garage status

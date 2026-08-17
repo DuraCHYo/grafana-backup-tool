@@ -10,8 +10,8 @@ from grafana_backup.restore import main as restore
 from grafana_backup.save.save import main as save
 from grafana_backup.tools import main as tools
 
-docstring = """
-{0} {1}
+docstring = f"""
+{PKG_NAME} {PKG_VERSION}
 
 Usage:
     grafana-backup save [--config=<filename>] [--components=<>] [--no-archive]
@@ -28,13 +28,11 @@ Options:
     --config=<filename>      Override default configuration path
     --components=<>          Comma separated list of components
     --no-archive            Skip archive creation
-""".format(PKG_NAME, PKG_VERSION)
+"""
 
 
 def main():
-    args = docopt(
-        docstring, help=False, version="{0} {1}".format(PKG_NAME, PKG_VERSION)
-    )
+    args = docopt(docstring, help=False, version=f"{PKG_NAME} {PKG_VERSION}")
 
     arg_config = args.get("--config", False)
     default_config = os.path.join(

@@ -1,4 +1,4 @@
-name: Release and Build Image
+name: Release, Build Binaries and Docker Image
 
 on:
   workflow_dispatch:
@@ -7,7 +7,58 @@ on:
       - 'v*'
 
 jobs:
+  build-binaries:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: grafana-backup-tool-linux-amd64
+            binary_src: dist/grafana-backup-tool
+          - os: windows-latest
+            artifact_name: grafana-backup-tool-windows-amd64.exe
+            binary_src: dist/grafana-backup-tool.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get python version
+        id: get_python_version
+        shell: bash
+        run: |
+          if [ -f .python-version ]; then
+            echo "VERSION=$(cat .python-version)" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=3.14" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: ${{ steps.get_python_version.outputs.VERSION }}
+
+      - name: Install uv dependencies
+        run: uv sync
+
+      - name: Build executable with PyInstaller
+        run: |
+          uv run --with pyinstaller pyinstaller --onefile --name grafana-backup-tool grafana_backup/cli.py
+
+      - name: Rename executable
+        shell: bash
+        run: |
+          mv ${{ matrix.binary_src }} ${{ matrix.artifact_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+
   release-and-docker:
+    needs: build-binaries
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -29,7 +80,13 @@ jobs:
           fi
           CLEAN_VER=$(echo $RAW_VER | sed 's/^v//')
           echo "VERSION=$CLEAN_VER" >> $GITHUB_OUTPUT
-      
+
+      - name: Download all built binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: bin/
+          merge-multiple: true
+
       - name: Log in to Registry
         uses: docker/login-action@v3
         with:
@@ -67,3 +124,6 @@ jobs:
           tag_name: v${{ steps.get_version.outputs.VERSION }}
           name: v${{ steps.get_version.outputs.VERSION }}
           generate_release_notes: true
+          files: |
+            bin/grafana-backup-tool-linux-amd64
+            bin/grafana-backup-tool-windows-amd64.exe
