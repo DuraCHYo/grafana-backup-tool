@@ -49,13 +49,7 @@ jobs:
         run: uv sync
 
       - name: Build executable with PyInstaller
-        run: |
-          uv run --with pyinstaller pyinstaller \
-            --onefile \
-            --name grafana-backup-tool \
-            --collect-submodules grafana_backup \
-            --collect-data grafana_backup \
-            grafana_backup/cli.py
+        run: uv run --with pyinstaller pyinstaller --onefile --name grafana-backup-tool --collect-submodules grafana_backup --collect-data grafana_backup grafana_backup/cli.py
 
       - name: Smoke test executable
         shell: bash
