@@ -50,7 +50,17 @@ jobs:
 
       - name: Build executable with PyInstaller
         run: |
-          uv run --with pyinstaller pyinstaller --onefile --name grafana-backup-tool grafana_backup/cli.py
+          uv run --with pyinstaller pyinstaller \
+            --onefile \
+            --name grafana-backup-tool \
+            --collect-submodules grafana_backup \
+            --collect-data grafana_backup \
+            grafana_backup/cli.py
+
+      - name: Smoke test executable
+        shell: bash
+        run: |
+          "${{ matrix.binary_src }}" --help
 
       - name: Rename executable
         shell: bash
@@ -63,8 +73,39 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.artifact_name }}
 
+  build-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get python version
+        id: get_python_version
+        shell: bash
+        run: |
+          if [ -f .python-version ]; then
+            echo "VERSION=$(cat .python-version)" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=3.14" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: ${{ steps.get_python_version.outputs.VERSION }}
+
+      - name: Build sdist and wheel with uv
+        run: uv build
+
+      - name: Upload python package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/*
+
   release-and-docker:
-    needs: build-binaries
+    needs: [build-binaries, build-package]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -92,6 +133,18 @@ jobs:
         with:
           path: bin/
           merge-multiple: true
+
+      - name: Download python package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+      - name: Generate checksums
+        run: |
+          sha256sum bin/* > SHA256SUMS
+          sha256sum dist/*.tar.gz dist/*.whl >> SHA256SUMS
+          cat SHA256SUMS
 
       - name: Log in to Registry
         uses: docker/login-action@v3
@@ -135,3 +188,6 @@ jobs:
             bin/grafana-backup-tool-linux-arm64
             bin/grafana-backup-tool-darwin-arm64
             bin/grafana-backup-tool-windows-amd64.exe
+            dist/*.tar.gz
+            dist/*.whl
+            SHA256SUMS

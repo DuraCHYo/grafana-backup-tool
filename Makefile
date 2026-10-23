@@ -1,14 +1,17 @@
 # Makefile
-.PHONY: build shell backup restore test update_version
+.PHONY: build package shell backup restore test logs update_version
 
 IMAGE_NAME := grafana-backup-tool
-IMAGE_TAG := v1.6.6
+IMAGE_TAG := v2.0.0
 GRAFANA_URL := http://localhost:3000
 GRAFANA_TOKEN := SA_TOKEN
-NEW_VERSION := v1.6.7
+NEW_VERSION := v2.0.0
 
 build:
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+package:
+	uv build
 
 shell:
 	docker run -it --rm $(IMAGE_NAME):$(IMAGE_TAG) sh
@@ -30,7 +33,7 @@ restore:
 		$(IMAGE_NAME):$(IMAGE_TAG) restore $(FILE)
 
 test:
-	docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) help
+	docker run --rm $(IMAGE_NAME):$(IMAGE_TAG) --help
 
 logs:
 	docker run --rm -e LOG_LEVEL=DEBUG $(IMAGE_NAME):$(IMAGE_TAG) save
@@ -40,5 +43,4 @@ update_version:
 	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' charts/grafana-backup-tool/Chart.yaml
 	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' charts/grafana-backup-tool/templates/cronjob.yaml
 	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' README.md
-	sed -i '' 's/$(IMAGE_TAG)/$(NEW_VERSION)/g' grafana_backup/constants.py
-	sed -i '' "s/$(IMAGE_TAG:v%=%)/$(NEW_VERSION:v%=%)/g" pyproject.toml
+	sed -i '' 's/^version = ".*"/version = "$(NEW_VERSION:v%=%)"/' pyproject.toml

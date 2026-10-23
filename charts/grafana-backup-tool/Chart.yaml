@@ -1,8 +1,8 @@
 apiVersion: v2
 name: grafana-backup-tool
 description: A Helm chart for Grafana backup tool using grafana-backup-tool
-version: 0.2.0
-appVersion: 'v1.6.7'
+version: 2.0.0
+appVersion: 'v2.0.0'
 type: application
 
 dependencies: []

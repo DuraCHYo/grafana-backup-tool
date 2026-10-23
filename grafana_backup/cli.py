@@ -1,123 +1,29 @@
+import asyncio
 import os
 from pathlib import Path
 
 import typer
 
-from grafana_backup.constants import JSON_CONFIG_PATH, PKG_NAME
-from grafana_backup.delete.delete import main as delete
-from grafana_backup.grafanaSettings import main as conf
-from grafana_backup.restore import main as restore
-from grafana_backup.save.save import main as save
-from grafana_backup.tools import main as tools
-
 app = typer.Typer(
     name="grafana-backup",
-    help=f"{PKG_NAME} — Grafana backup and restore utility.",
-    no_args_is_help=False,
+    help="grafana-backup — Grafana backup and restore utility.",
+    no_args_is_help=True,
     add_completion=False,
 )
 
 
-def get_settings(config: str | None):
-    """Load configuration using the same priority as the old CLI."""
+def _resolve_backup_dir(config: str | None) -> Path:
+    """Resolve the configured backup directory (falls back to ``_OUTPUT_``)."""
+    try:
+        from grafana_backup.v2.config import load_config
 
-    default_config = Path(__file__).parent / "conf" / "grafanaSettings.json"
-
-    if config:
-        return conf(config)
-
-    if os.path.isfile(JSON_CONFIG_PATH):
-        return conf(JSON_CONFIG_PATH)
-
-    if default_config.is_file():
-        return conf(str(default_config))
-
-    return conf()
-
-
-def build_args(
-    config: str | None,
-    components: str | None,
-    no_archive: bool = False,
-):
-    """
-    Build an args dict compatible with the existing functions.
-
-    This allows us to migrate the CLI to Typer without rewriting
-    save/restore/delete/tools internals.
-    """
-
-    return {
-        "--config": config,
-        "--components": components,
-        "--no-archive": no_archive,
-    }
-
-
-@app.callback(invoke_without_command=True)
-def cli(
-    ctx: typer.Context,
-    config: str | None = typer.Option(
-        None,
-        "--config",
-        help="Override default configuration path.",
-    ),
-):
-    """
-    Grafana backup utility.
-
-    With no command:
-      RESTORE=true  -> restore mode
-      otherwise     -> save mode
-    """
-
-    if ctx.invoked_subcommand is not None:
-        return
-
-    settings = get_settings(config)
-
-    env_mode = os.getenv("RESTORE", "false").lower()
-
-    if env_mode == "true":
-        archive = os.getenv("ARCHIVE_FILE")
-
-        if not archive:
-            raise typer.BadParameter(
-                "No archive file provided for restore mode. "
-                "Use 'grafana-backup restore <file>' "
-                "or set $ARCHIVE_FILE."
-            )
-
-        backup_dir = settings.get("BACKUP_DIR", "_OUTPUT_")
-
-        if not os.path.exists(archive):
-            backup_archive = os.path.join(backup_dir, archive)
-
-            if os.path.exists(backup_archive):
-                archive = backup_archive
-
-        args = {
-            "--config": config,
-            "--components": None,
-            "--no-archive": False,
-            "<archive_file>": archive,
-        }
-
-        restore(args, settings)
-
-    else:
-        args = {
-            "--config": config,
-            "--components": None,
-            "--no-archive": False,
-        }
-
-        save(args, settings)
+        return load_config(config).storage.backup_dir
+    except Exception:
+        return Path("_OUTPUT_")
 
 
 @app.command("save")
 def save_command(
-    ctx: typer.Context,
     config: str | None = typer.Option(
         None,
         "--config",
@@ -135,16 +41,9 @@ def save_command(
     ),
 ):
     """Create a Grafana backup."""
+    from grafana_backup.v2.cli import run_backup
 
-    settings = get_settings(config)
-
-    args = build_args(
-        config=config,
-        components=components,
-        no_archive=no_archive,
-    )
-
-    save(args, settings)
+    asyncio.run(run_backup(components, False, config, no_archive))
 
 
 @app.command("restore")
@@ -165,89 +64,29 @@ def restore_command(
     ),
 ):
     """Restore Grafana from a backup archive."""
+    from grafana_backup.v2.cli import run_restore
 
-    settings = get_settings(config)
-
+    # Get archive file
     archive = archive_file or os.getenv("ARCHIVE_FILE")
 
     if not archive:
         raise typer.BadParameter(
-            "No archive file provided. "
-            "Use: grafana-backup restore <file> "
-            "or set $ARCHIVE_FILE."
+            "No archive file provided. Use: grafana-backup restore <file> or set $ARCHIVE_FILE."
         )
 
-    backup_dir = settings.get("BACKUP_DIR", "_OUTPUT_")
-
+    # Resolve relative archive names against the configured backup directory.
+    backup_dir = _resolve_backup_dir(config)
     if not os.path.exists(archive):
-        backup_archive = os.path.join(backup_dir, archive)
-
+        backup_archive = os.path.join(str(backup_dir), archive)
         if os.path.exists(backup_archive):
             archive = backup_archive
 
-    args = build_args(
-        config=config,
-        components=components,
-    )
-
-    args["<archive_file>"] = archive
-
-    restore(args, settings)
-
-
-@app.command("delete")
-def delete_command(
-    config: str | None = typer.Option(
-        None,
-        "--config",
-        help="Override default configuration path.",
-    ),
-    components: str | None = typer.Option(
-        None,
-        "--components",
-        help="Comma separated list of components.",
-    ),
-):
-    """Delete Grafana backup data."""
-
-    settings = get_settings(config)
-
-    args = build_args(
-        config=config,
-        components=components,
-    )
-
-    delete(args, settings)
-
-
-@app.command("tools")
-def tools_command(
-    optional_command: str | None = typer.Argument(
-        None,
-        help="Optional tools command.",
-    ),
-    optional_argument: str | None = typer.Argument(
-        None,
-        help="Optional command argument.",
-    ),
-    config: str | None = typer.Option(
-        None,
-        "--config",
-        help="Override default configuration path.",
-    ),
-):
-    """Run backup utility tools."""
-
-    settings = get_settings(config)
-
-    args = {
-        "--config": config,
-        "<optional-command>": optional_command,
-        "<optional-argument>": optional_argument,
-    }
-
-    tools(args, settings)
+    asyncio.run(run_restore(archive, components, False, config))
 
 
 def main():
     app()
+
+
+if __name__ == "__main__":
+    main()
