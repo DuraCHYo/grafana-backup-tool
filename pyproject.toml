@@ -1,33 +1,76 @@
 [project]
 name = "grafana-backup-tool"
-version = "1.6.7"
-description = "Backup tool for Grafana"
+version = "2.0.0"
+description = "Modern backup tool for Grafana"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "python-dotenv~=1.1.1",
+    "typer>=0.25.1",
+    # v2 dependencies
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "rich>=13.0.0",
+    "loguru>=0.7.0",
+    "aiofiles>=23.0.0",
+    "tenacity>=8.0.0",
+    "boto3>=1.40.40",
+    "botocore>=1.40.40",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "moto[s3]>=5.0.0",
+]
+cloud = [
     "azure-core~=1.35.1",
     "azure-storage-blob~=12.28.0",
-    "boto3~=1.40.40",
-    "botocore~=1.40.40",
-    "docopt~=0.6.2",
-    "google-api-core~=2.29.0",
     "google-cloud-storage~=3.8.0",
-    "influxdb~=5.3.2",
-    "packaging~=24.2",
-    "pyinstaller>=6.22.1",
-    "python-dotenv~=1.1.1",
-    "questionary>=2.1.1",
-    "requests~=2.32.5",
-    "setuptools~=78.1.0",
-    "typer>=0.25.1",
 ]
 
 [project.scripts]
 grafana-backup = "grafana_backup.cli:main"
 
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
 
-[tool.setuptools]
-packages = ["grafana_backup"]
+[tool.uv.build-backend]
+module-root = ""
+module-name = "grafana_backup"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Deliberate exceptions:
+# - BLE001: backup/restore components intentionally wrap every item in a wide
+#   ``except Exception`` (with logging) so one broken item never aborts a
+#   whole component run.
+# - DTZ005: backup/restore directory names are stamped with local naive
+#   ``datetime.now()`` on purpose; switching to UTC would shift timestamp
+#   directories produced by earlier versions.
+ignore = ["BLE001", "DTZ005"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.4",
+    "ty>=0.0.91",
+]

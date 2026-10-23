@@ -1,94 +1,91 @@
+import asyncio
 import os
-import sys
+from pathlib import Path
 
-from docopt import docopt
+import typer
 
-from grafana_backup.constants import JSON_CONFIG_PATH, PKG_NAME, PKG_VERSION
-from grafana_backup.delete.delete import main as delete
-from grafana_backup.grafanaSettings import main as conf
-from grafana_backup.restore import main as restore
-from grafana_backup.save.save import main as save
-from grafana_backup.tools import main as tools
+app = typer.Typer(
+    name="grafana-backup",
+    help="grafana-backup — Grafana backup and restore utility.",
+    no_args_is_help=True,
+    add_completion=False,
+)
 
-docstring = f"""
-{PKG_NAME} {PKG_VERSION}
 
-Usage:
-    grafana-backup save [--config=<filename>] [--components=<>] [--no-archive]
-    grafana-backup restore [--config=<filename>] [--components=<>] [<archive_file>]
-    grafana-backup delete [--config=<filename>] [--components=<>]
-    grafana-backup tools [-h | --help] [--config=<filename>] [<optional-command>] [<optional-argument>]
-    grafana-backup [--config=<filename>]
-    grafana-backup [-h | --help]
-    grafana-backup --version
+def _resolve_backup_dir(config: str | None) -> Path:
+    """Resolve the configured backup directory (falls back to ``_OUTPUT_``)."""
+    try:
+        from grafana_backup.v2.config import load_config
 
-Options:
-    -h --help                Show this help message and exit
-    --version               Get version information and exit
-    --config=<filename>      Override default configuration path
-    --components=<>          Comma separated list of components
-    --no-archive            Skip archive creation
-"""
+        return load_config(config).storage.backup_dir
+    except Exception:
+        return Path("_OUTPUT_")
+
+
+@app.command("save")
+def save_command(
+    config: str | None = typer.Option(
+        None,
+        "--config",
+        help="Override default configuration path.",
+    ),
+    components: str | None = typer.Option(
+        None,
+        "--components",
+        help="Comma separated list of components.",
+    ),
+    no_archive: bool = typer.Option(
+        False,
+        "--no-archive",
+        help="Skip archive creation.",
+    ),
+):
+    """Create a Grafana backup."""
+    from grafana_backup.v2.cli import run_backup
+
+    asyncio.run(run_backup(components, False, config, no_archive))
+
+
+@app.command("restore")
+def restore_command(
+    archive_file: str | None = typer.Argument(
+        None,
+        help="Backup archive to restore.",
+    ),
+    config: str | None = typer.Option(
+        None,
+        "--config",
+        help="Override default configuration path.",
+    ),
+    components: str | None = typer.Option(
+        None,
+        "--components",
+        help="Comma separated list of components.",
+    ),
+):
+    """Restore Grafana from a backup archive."""
+    from grafana_backup.v2.cli import run_restore
+
+    # Get archive file
+    archive = archive_file or os.getenv("ARCHIVE_FILE")
+
+    if not archive:
+        raise typer.BadParameter(
+            "No archive file provided. Use: grafana-backup restore <file> or set $ARCHIVE_FILE."
+        )
+
+    # Resolve relative archive names against the configured backup directory.
+    backup_dir = _resolve_backup_dir(config)
+    if not os.path.exists(archive):
+        backup_archive = os.path.join(str(backup_dir), archive)
+        if os.path.exists(backup_archive):
+            archive = backup_archive
+
+    asyncio.run(run_restore(archive, components, False, config))
 
 
 def main():
-    args = docopt(docstring, help=False, version=f"{PKG_NAME} {PKG_VERSION}")
-
-    arg_config = args.get("--config", False)
-    default_config = os.path.join(
-        os.path.dirname(__file__), "conf", "grafanaSettings.json"
-    )
-
-    if arg_config:
-        settings = conf(arg_config)
-    elif os.path.isfile(JSON_CONFIG_PATH):
-        settings = conf(JSON_CONFIG_PATH)
-    elif os.path.isfile(default_config):
-        settings = conf(default_config)
-    else:
-        settings = conf()
-
-    is_save = args.get("save")
-    is_restore = args.get("restore")
-    is_delete = args.get("delete")
-    is_tools = args.get("tools")
-
-    if not any([is_save, is_restore, is_delete, is_tools]):
-        env_mode = os.getenv("RESTORE", "false").lower()
-        if env_mode == "true":
-            is_restore = True
-        else:
-            is_save = True
-
-    if is_save:
-        save(args, settings)
-
-    elif is_restore:
-        archive = args.get("<archive_file>") or os.getenv("ARCHIVE_FILE")
-
-        if not archive:
-            raise FileNotFoundError(
-                "No archive file provided for restore mode.",
-                "Use: grafana-backup restore <file> OR set $ARCHIVE_FILE",
-            )
-
-        backup_dir = settings.get("BACKUP_DIR", "_OUTPUT_")
-        if not os.path.exists(archive) and os.path.exists(
-            os.path.join(backup_dir, archive)
-        ):
-            archive = os.path.join(backup_dir, archive)
-
-        args["<archive_file>"] = archive
-        restore(args, settings)
-
-    elif is_delete:
-        delete(args, settings)
-    elif is_tools:
-        tools(args, settings)
-    else:
-        print(docstring)
-
-    sys.exit(0)
+    app()
 
 
 if __name__ == "__main__":

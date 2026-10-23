@@ -4,8 +4,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [v.2.0.0] - ?-?-?
-- Plan: Rewrite all code
+# [v2.0.0] - 2026-10-23
+
+This release is a complete rewrite. The legacy v1 engine has been removed; backup and restore now
+run through a single async, registry-driven implementation. See [REFACTOR_NOTES.md](REFACTOR_NOTES.md)
+for the full migration guide.
+
+### Added
+- Registry-driven component engine with 15 components: organizations, users, teams, team-members,
+  folders (incl. permissions), library elements, datasources, dashboards, dashboard versions,
+  snapshots, annotations, alert rules, contact points, notification policies and legacy alert channels.
+- Automatic S3 upload right after the archive is created and automatic download from S3 on restore
+  when the archive is missing locally. Works with AWS, MinIO, Garage, AIStor and other S3-compatible
+  endpoints (`AWS_S3_BUCKET_NAME`, `AWS_S3_BUCKET_KEY`, `AWS_DEFAULT_REGION`, `AWS_ENDPOINT_URL`,
+  `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, or the `aws` config section).
+- `--no-archive` support: keeps raw component files on disk instead of a `.tgz` archive.
+- Meaningful exit codes: `0` on success; `1` on configuration errors, failed components or failed S3
+  uploads (safe for CronJobs/CI).
+- `LOG_LEVEL` environment variable support.
+- Legacy component-name aliases: `contact_points`, `alert_rules`, `team_members`,
+  `library_elements`, `notification_policies` and `dashboard_versions` are accepted by
+  `--components`.
+- Unit tests for the S3 provider (in-memory S3 via `moto`).
+
+### Changed
+- Configuration precedence is now **environment > JSON config > defaults** (v1 parity). Previously
+  documented variables such as `GRAFANA_URL`, `GRAFANA_TOKEN`, `VERIFY_SSL`, `BACKUP_DIR`,
+  `PRETTY_PRINT` and `BACKUP_FILE_FORMAT` were ignored by v2.
+- Archive layout is uniform: `<component>/<timestamp>/<files>`; nested per-dashboard version
+  directories are preserved.
+- Restore detects v2 and legacy (flat v1 / early v2) archives automatically.
+- CLI reduced to `save` and `restore`; `--engine v1` was removed. Component selection accepts both
+  dash and underscore spellings.
+- Restore prints its result table only once (previously duplicated).
+- Docker image references and Helm chart defaults updated to `v2.0.0`.
+- README and examples refreshed: accurate component matrix, working environment-variable examples,
+  CLI reference, archive format and compatibility notes.
+
+### Fixed
+- Dashboard version history on Grafana 13: switched to `/api/dashboards/uid/{uid}/versions` with a
+  fallback to the legacy id-based endpoint (both response shapes are supported).
+- Snapshot listing on Grafana 13: fallback from the removed `/api/snapshots` list to
+  `/api/dashboard/snapshots`.
+- Nested files (dashboard versions) were silently dropped from archives.
+- Archive cleanup removed nothing (wrong condition); stale artifact directories accumulated.
+- Restore extraction moved components inside themselves (`datasources/datasources/...`).
+- Archive format detection treated uid-like subdirectories as timestamp directories.
+- `--no-archive` deleted the freshly written backup files.
+- Restore failed with `GrafanaClient.post() got an unexpected keyword argument 'json'` for dashboards,
+  snapshots, library elements, organizations, annotations, notification policies and alert channels.
+- `python -m grafana_backup.cli` exited successfully without doing anything (missing `__main__` guard).
+- 400+ Ruff findings across the v2 tree; remaining intentional ones (`BLE001`, `DTZ005`) are
+  documented and ignored in `pyproject.toml`.
+- Python packaging: `setuptools` only shipped the top-level package, so built wheels/sdists
+  contained no `v2/` modules and no packaged default config. The build backend was migrated to
+  **`uv_build`** (`uv build`); wheels now contain the full `v2/` tree and `conf/*.json`.
+- Build tooling: `uv build` produces the sdist/wheel, `make package` wraps it, and the release
+  workflow attaches both artifacts to GitHub Releases.
+- Release binaries: standalone PyInstaller executables for Linux (amd64/arm64), macOS (arm64) and
+  Windows (amd64) are built in CI, smoke-tested (`--help`), and published with a `SHA256SUMS` file.
+  All v2 modules and the packaged default config are bundled into each binary.
+
+### Removed
+- The entire v1 engine: `save/`, `create/`, `delete/`, `api_methods/`, `providers/`, `archive.py`,
+  `api_checks.py`, `commons.py`, `constants.py`, `grafanaSettings.py`, `dashboardApi.py`,
+  `grafana_api.py`, `core/send_requests.py` and the v1 `components/` helpers.
+- Maintenance commands (`create`, `delete`, `pause-alerts`, `unpause-alerts`, `influx`,
+  `make-users-viewers`, `restore-user-permissions`, `update-folder-permissions`,
+  `update-notification-policy`) and the `help` subcommand (use `--help`).
+- Azure Blob and GCS upload/download. Their SDKs are still installable via the `cloud` extra, but
+  the v2 coordinator implements S3 only.
+
+### Breaking Changes
+- `--engine v1` and all v1-only commands are gone.
+- Azure/GCS storage is no longer supported (S3 only) (I can restore functionality if someone needs this feature. Please leave an issue if needs)
+- Restored users always receive the temporary password `temp_password_123`; the v1
+  `grafana.default_user_password` setting is ignored.
+- Client certificates (`general.client_cert`) and extra HTTP headers (`GRAFANA_HEADERS`) are not
+  supported by the v2 HTTP client.
+- Legacy alert channels can be restored only on Grafana ≤ 12 (the API was removed in Grafana 13).
+- Annotations are exported for the last 13 months only.
 
 # [v1.6.8] - 2026-08-17
 
